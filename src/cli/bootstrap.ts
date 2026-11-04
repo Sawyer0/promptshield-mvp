@@ -87,7 +87,9 @@ export function setupContainer(container: Container): void {
       // Use OptimizedRuleMatcher for O(n) performance
       // Can switch to DefaultRuleMatcher if needed for debugging
       const useOptimized = process.env.USE_OPTIMIZED_MATCHER !== 'false';
-      return useOptimized ? new OptimizedRuleMatcher() : new DefaultRuleMatcher();
+      return useOptimized
+        ? new OptimizedRuleMatcher()
+        : new DefaultRuleMatcher();
     },
     true
   );
@@ -177,11 +179,12 @@ export function setupContainer(container: Container): void {
   // Report service
   container.registerFactory(
     'reportService',
-    () => new ReportServiceImpl(
-      renderers,
-      container.resolve('fileSystem'),
-      container.resolve('pathUtils')
-    ),
+    () =>
+      new ReportServiceImpl(
+        renderers,
+        container.resolve('fileSystem'),
+        container.resolve('pathUtils')
+      ),
     true
   );
 
@@ -337,7 +340,9 @@ export function setupContainer(container: Container): void {
               new Rule(
                 'phone_numbers',
                 'Detects common phone number formats',
-                ['\\+?\\d{1,4}?[-.\\s]?\\(?\\d{1,3}?\\)?[-.\\s]?\\d{1,4}[-.\\s]?\\d{1,4}[-.\\s]?\\d{1,9}'],
+                [
+                  '\\+?\\d{1,4}?[-.\\s]?\\(?\\d{1,3}?\\)?[-.\\s]?\\d{1,4}[-.\\s]?\\d{1,4}[-.\\s]?\\d{1,9}',
+                ],
                 [],
                 'medium' as RuleSeverity,
                 'pii' as RuleCategory,

@@ -52,7 +52,10 @@ export class ReportServiceImpl implements ReportService {
       }
 
       // Write to file
-      const writeResult = await this.fs.writeFile(outputPath, contentResult.value);
+      const writeResult = await this.fs.writeFile(
+        outputPath,
+        contentResult.value
+      );
       if (writeResult.isErr()) {
         return err(writeResult.error);
       }

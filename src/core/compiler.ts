@@ -19,9 +19,14 @@ import {
  * @returns Inferred violation type
  */
 function inferViolationType(tags: string[]): ViolationType {
-  const tagSet = new Set(tags.map(t => t.toLowerCase()));
-  
-  if (tagSet.has('pii') || tagSet.has('email') || tagSet.has('phone') || tagSet.has('ssn')) {
+  const tagSet = new Set(tags.map((t) => t.toLowerCase()));
+
+  if (
+    tagSet.has('pii') ||
+    tagSet.has('email') ||
+    tagSet.has('phone') ||
+    tagSet.has('ssn')
+  ) {
     return 'pii';
   }
   if (tagSet.has('bias') || tagSet.has('discrimination')) {
@@ -30,7 +35,7 @@ function inferViolationType(tags: string[]): ViolationType {
   if (tagSet.has('hallucination') || tagSet.has('factual')) {
     return 'hallucination';
   }
-  
+
   return 'other';
 }
 
@@ -47,12 +52,12 @@ function compileRegexRule(rule: Rule): CompiledRegexStrategy {
       rule.id
     );
   }
-  
+
   try {
     // Compile with global flag for finding all matches
     // Use 'u' flag for proper Unicode support
     const regex = new RegExp(rule.pattern, 'gu');
-    
+
     return {
       rule,
       regex,
@@ -79,20 +84,20 @@ function compileKeywordRule(rule: Rule): CompiledKeywordStrategy {
       rule.id
     );
   }
-  
+
   // Split pattern by commas or pipes and normalize
   const keywords = rule.pattern
     .split(/[,|]/)
-    .map(k => k.trim())
-    .filter(k => k.length > 0);
-  
+    .map((k) => k.trim())
+    .filter((k) => k.length > 0);
+
   if (keywords.length === 0) {
     throw new RuleCompilationError(
       `Rule '${rule.id}' has no valid keywords in pattern`,
       rule.id
     );
   }
-  
+
   return {
     rule,
     keywords,
@@ -114,14 +119,14 @@ export function compileRule(rule: Rule): CompiledStrategy {
       rule.id
     );
   }
-  
+
   switch (rule.type) {
     case 'regex':
       return compileRegexRule(rule);
-    
+
     case 'keyword':
       return compileKeywordRule(rule);
-    
+
     case 'custom':
       // Custom rules require a validator function
       if (!rule.validator) {
@@ -137,7 +142,7 @@ export function compileRule(rule: Rule): CompiledStrategy {
         regex: /.+/gu, // Match anything, validator will filter
         violationType: inferViolationType(rule.tags),
       };
-    
+
     default:
       throw new RuleCompilationError(
         `Unknown rule type '${rule.type}' for rule '${rule.id}'`,
@@ -154,13 +159,13 @@ export function compileRule(rule: Rule): CompiledStrategy {
 export function compileRulePack(rulePack: RulePack): CompiledStrategy[] {
   const strategies: CompiledStrategy[] = [];
   const errors: RuleCompilationError[] = [];
-  
+
   for (const rule of rulePack.rules) {
     // Skip disabled rules
     if (!rule.enabled) {
       continue;
     }
-    
+
     try {
       const strategy = compileRule(rule);
       strategies.push(strategy);
@@ -177,15 +182,15 @@ export function compileRulePack(rulePack: RulePack): CompiledStrategy[] {
       }
     }
   }
-  
+
   // If any rules failed to compile, throw an aggregate error
   if (errors.length > 0) {
-    const errorMessages = errors.map(e => e.message).join('\n');
+    const errorMessages = errors.map((e) => e.message).join('\n');
     throw new RuleCompilationError(
       `Failed to compile ${errors.length} rule(s) from rulepack '${rulePack.name}':\n${errorMessages}`
     );
   }
-  
+
   return strategies;
 }
 
@@ -196,11 +201,11 @@ export function compileRulePack(rulePack: RulePack): CompiledStrategy[] {
  */
 export function compileRulePacks(rulePacks: RulePack[]): CompiledStrategy[] {
   const allStrategies: CompiledStrategy[] = [];
-  
+
   for (const pack of rulePacks) {
     const strategies = compileRulePack(pack);
     allStrategies.push(...strategies);
   }
-  
+
   return allStrategies;
 }

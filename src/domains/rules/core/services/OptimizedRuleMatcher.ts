@@ -29,7 +29,7 @@ export class OptimizedRuleMatcher implements RuleMatcher {
   compileRules(rules: Rule[]): void {
     this.compiledRules = rules;
     this.keywordTrie = this.buildKeywordTrie(rules);
-    
+
     // Build Regex matchers
     const csPatterns: string[] = [];
     const ciPatterns: string[] = [];
@@ -53,8 +53,10 @@ export class OptimizedRuleMatcher implements RuleMatcher {
       }
     }
 
-    this.csRegex = csPatterns.length > 0 ? new RegExp(csPatterns.join('|'), 'g') : null;
-    this.ciRegex = ciPatterns.length > 0 ? new RegExp(ciPatterns.join('|'), 'gi') : null;
+    this.csRegex =
+      csPatterns.length > 0 ? new RegExp(csPatterns.join('|'), 'g') : null;
+    this.ciRegex =
+      ciPatterns.length > 0 ? new RegExp(ciPatterns.join('|'), 'gi') : null;
   }
 
   /**
@@ -89,7 +91,9 @@ export class OptimizedRuleMatcher implements RuleMatcher {
 
     if (rule.hasKeywordPatterns()) {
       const keywords = rule.getNormalizedKeywords();
-      const searchContent = rule.caseSensitive ? content : content.toLowerCase();
+      const searchContent = rule.caseSensitive
+        ? content
+        : content.toLowerCase();
 
       for (const keyword of keywords) {
         let index = 0;
@@ -188,7 +192,10 @@ export class OptimizedRuleMatcher implements RuleMatcher {
     return root;
   }
 
-  private matchAllKeywords(content: string, resultMap: Map<Rule, MatchResult[]>): void {
+  private matchAllKeywords(
+    content: string,
+    resultMap: Map<Rule, MatchResult[]>
+  ): void {
     if (!this.keywordTrie) return;
     let node = this.keywordTrie;
     const lowerContent = content.toLowerCase();
@@ -223,7 +230,12 @@ export class OptimizedRuleMatcher implements RuleMatcher {
     }
   }
 
-  private matchCompound(content: string, regex: RegExp, ruleMap: Map<number, Rule>, resultMap: Map<Rule, MatchResult[]>): void {
+  private matchCompound(
+    content: string,
+    regex: RegExp,
+    ruleMap: Map<number, Rule>,
+    resultMap: Map<Rule, MatchResult[]>
+  ): void {
     let m;
     regex.lastIndex = 0;
     while ((m = regex.exec(content)) !== null) {
@@ -254,7 +266,12 @@ export class OptimizedRuleMatcher implements RuleMatcher {
     }
   }
 
-  private getContext(content: string, start: number, end: number, size: number = 50) {
+  private getContext(
+    content: string,
+    start: number,
+    end: number,
+    size: number = 50
+  ) {
     const bStart = Math.max(0, start - size);
     const aEnd = Math.min(content.length, end + size);
     return {
