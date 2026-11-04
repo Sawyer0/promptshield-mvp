@@ -402,6 +402,29 @@ describe('CLI E2E Tests', () => {
       );
     });
 
+    test('reads .ndjson files line by line without --ndjson', () => {
+      const inputFile = path.join(fixturesDir, 'chat.ndjson');
+      fs.writeFileSync(
+        inputFile,
+        [
+          JSON.stringify({
+            prompt: 'hi',
+            response: 'mail me at a@example.com',
+          }),
+          JSON.stringify({ prompt: 'SSN 123-45-6789', response: 'noted' }),
+        ].join('\n')
+      );
+
+      const result = scan([inputFile, '-r', 'pii', '-o', 'json']);
+
+      expect(result.status).toBe(0);
+      const report = JSON.parse(result.stdout);
+      expect(report.metrics.objects_scanned).toBe(2);
+      expect(
+        report.violations.map((v: { rule_id: string }) => v.rule_id).sort()
+      ).toEqual(['email', 'ssn']);
+    });
+
     test('reports a missing RulePack clearly', () => {
       const result = scan(['-', '-r', 'does-not-exist.yaml'], 'hello');
 
