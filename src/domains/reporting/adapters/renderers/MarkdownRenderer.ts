@@ -15,7 +15,10 @@ export class MarkdownRenderer implements Renderer {
       const violations = report.getFilteredViolations();
       const summary = ViolationUtils.createSummary(violations);
       const metrics = report.scanResult.metrics;
-      const useColor = !report.options.noColor;
+      // The styled terminal summary is opt-in: callers set noColor: false
+      // only when writing to an interactive terminal. Everything else
+      // (files, pipes, library use) gets plain Markdown.
+      const useColor = report.options.noColor === false;
 
       let output = '';
 
