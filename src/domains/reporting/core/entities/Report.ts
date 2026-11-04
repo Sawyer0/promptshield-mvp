@@ -74,8 +74,6 @@ export interface ReportOptions {
 
   // Output options
   outputFile?: string;
-  compress?: 'gzip' | 'deflate';
-  compressionLevel?: number;
 
   // Input information
   inputFile?: string;

@@ -30,8 +30,6 @@ export interface FileWriter {
 }
 
 export interface WriteOptions {
-  compress?: 'gzip' | 'deflate';
-  compressionLevel?: number;
   encoding?: BufferEncoding;
 }
 

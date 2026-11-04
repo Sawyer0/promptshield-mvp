@@ -22,14 +22,9 @@ export class ScanRequest {
       scanEntireObject: false,
       ndjsonMode: false,
       streamingThreshold: 1000,
-      memoryWarningThreshold: 0.8,
-      parallel: false,
-      batchSize: 10,
-      timeout: 300,
       quiet: false,
       verbose: false,
       debug: false,
-      strict: false,
       ...config,
     };
 

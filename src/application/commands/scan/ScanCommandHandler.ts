@@ -60,8 +60,6 @@ export class ScanCommandHandler {
           Boolean(scanConfig.outputFile) ||
           !process.stdout.isTTY,
         outputFile: scanConfig.outputFile,
-        compress: scanConfig.compress,
-        compressionLevel: scanConfig.compressionLevel,
         inputFile: command.isRawContent ? 'stdin' : command.input,
       });
 
@@ -145,13 +143,6 @@ export class ScanCommandHandler {
       !validSeverities.includes(command.options.failOn)
     ) {
       errors.push(`Invalid fail-on severity: ${command.options.failOn}`);
-    }
-
-    if (command.options.compressionLevel !== undefined) {
-      const level = command.options.compressionLevel;
-      if (level < 0 || level > 9) {
-        errors.push('Compression level must be between 0 and 9');
-      }
     }
 
     if (errors.length > 0) {

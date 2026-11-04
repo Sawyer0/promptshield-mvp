@@ -23,20 +23,14 @@ export interface RulePackYamlData {
 }
 
 export interface ScanConfigData {
-  parallel?: boolean;
-  batchSize?: number;
-  timeout?: number;
   maxObjects?: number;
   maxDepth?: number;
   streamingThreshold?: number;
-  memoryWarningThreshold?: number;
 }
 
 export interface OutputConfigData {
   format?: 'json' | 'markdown' | 'csv' | 'table' | 'html' | 'ndjson';
   file?: string;
-  compress?: 'gzip' | 'deflate';
-  compressionLevel?: number;
   fields?: string[];
 }
 
