@@ -6,28 +6,21 @@
 import * as fs from 'fs/promises';
 import * as yaml from 'js-yaml';
 import * as path from 'path';
-import { IFileReader, RulePack, SchemaValidationError } from '../core/types.js';
+import { IFileReader, RulePack, SchemaValidationError } from '../core/types';
 
 /**
- * Validate rulepack schema
- * @param data - Parsed YAML data
- * @throws SchemaValidationError if validation fails
+ * Check the structure of a parsed RulePack. Rule contents (patterns,
+ * severities, categories) are validated by compileRulePack().
+ * @throws SchemaValidationError if the structure is invalid
  */
 function validateRulePack(data: unknown): asserts data is RulePack {
-  if (!data || typeof data !== 'object') {
-    throw new SchemaValidationError('Rulepack must be an object');
+  if (!data || typeof data !== 'object' || Array.isArray(data)) {
+    throw new SchemaValidationError('RulePack must be a YAML mapping');
   }
 
   const pack = data as Record<string, unknown>;
 
-  // Validate required fields
-  if (typeof pack.schema_version !== 'string') {
-    throw new SchemaValidationError('Missing or invalid field: schema_version');
-  }
-  if (typeof pack.version !== 'string') {
-    throw new SchemaValidationError('Missing or invalid field: version');
-  }
-  if (typeof pack.name !== 'string') {
+  if (typeof pack.name !== 'string' || pack.name.trim() === '') {
     throw new SchemaValidationError('Missing or invalid field: name');
   }
   if (typeof pack.description !== 'string') {
@@ -35,62 +28,26 @@ function validateRulePack(data: unknown): asserts data is RulePack {
   }
   if (!Array.isArray(pack.rules)) {
     throw new SchemaValidationError(
-      'Missing or invalid field: rules (must be an array)'
+      'Missing or invalid field: rules (must be a list)'
     );
   }
 
-  // Validate each rule
-  for (let i = 0; i < pack.rules.length; i++) {
-    const rule = pack.rules[i];
-
+  pack.rules.forEach((rule: unknown, i: number) => {
     if (!rule || typeof rule !== 'object') {
-      throw new SchemaValidationError(`Rule at index ${i} is not an object`);
+      throw new SchemaValidationError(`Rule at index ${i} is not a mapping`);
     }
-
     const r = rule as Record<string, unknown>;
-
     if (typeof r.id !== 'string') {
       throw new SchemaValidationError(
         `Rule at index ${i}: missing or invalid field 'id'`
       );
     }
-    if (typeof r.name !== 'string') {
+    if (typeof r.description !== 'string') {
       throw new SchemaValidationError(
-        `Rule at index ${i}: missing or invalid field 'name'`
+        `Rule '${r.id}': missing or invalid field 'description'`
       );
     }
-    if (
-      typeof r.type !== 'string' ||
-      !['regex', 'keyword', 'custom'].includes(r.type)
-    ) {
-      throw new SchemaValidationError(
-        `Rule '${r.id}': invalid type (must be 'regex', 'keyword', or 'custom')`
-      );
-    }
-    if (
-      typeof r.severity !== 'string' ||
-      !['low', 'medium', 'high', 'critical'].includes(r.severity)
-    ) {
-      throw new SchemaValidationError(
-        `Rule '${r.id}': invalid severity (must be 'low', 'medium', 'high', or 'critical')`
-      );
-    }
-    if (typeof r.enabled !== 'boolean') {
-      throw new SchemaValidationError(
-        `Rule '${r.id}': missing or invalid field 'enabled'`
-      );
-    }
-    if (typeof r.message !== 'string') {
-      throw new SchemaValidationError(
-        `Rule '${r.id}': missing or invalid field 'message'`
-      );
-    }
-    if (!Array.isArray(r.tags)) {
-      throw new SchemaValidationError(
-        `Rule '${r.id}': missing or invalid field 'tags'`
-      );
-    }
-  }
+  });
 }
 
 /**

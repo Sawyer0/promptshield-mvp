@@ -1,261 +1,144 @@
 /**
- * Core domain models and interfaces for PromptShield
- * These types are environment-agnostic and can be used in any JavaScript runtime
+ * Public types for the PromptShield library API.
+ *
+ * Rule and RulePack mirror the RulePack YAML format the CLI reads, so a pack
+ * loaded from disk or written inline in code behaves the same either way.
  */
 
-/**
- * Severity levels for rule violations
- */
+/** Severity levels for rule violations. */
 export type Severity = 'low' | 'medium' | 'high' | 'critical';
 
-/**
- * Violation category types
- */
-export type ViolationType = 'pii' | 'bias' | 'hallucination' | 'other';
+/** Rule categories understood by the bundled RulePacks and the CLI. */
+export type Category =
+  | 'pii'
+  | 'bias'
+  | 'hallucination'
+  | 'security'
+  | 'compliance'
+  | 'parse'
+  | 'internal'
+  | 'custom';
 
-/**
- * Rule matching strategy types
- */
-export type RuleType = 'regex' | 'keyword' | 'custom';
-
-/**
- * AST-like metadata node for a detected violation
- * Non-destructive: contains exact position and context without modifying original text
- */
-export interface ViolationNode {
-  /** Unique identifier for the rule that triggered this violation */
-  ruleId: string;
-
-  /** Human-readable name of the rule */
-  ruleName: string;
-
-  /** Category of the violation */
-  type: ViolationType;
-
-  /** Severity level of the violation */
-  severity: Severity;
-
-  /** Zero-indexed character offset where the match starts */
-  start: number;
-
-  /** Zero-indexed character offset where the match ends (exclusive) */
-  end: number;
-
-  /** The actual text that matched the rule */
-  matchText: string;
-
-  /** Surrounding text context for reporting (e.g., ±50 chars) */
-  context: string;
-
-  /** Human-readable message describing the violation */
-  message: string;
-
-  /** Optional suggestion for fixing the violation */
-  suggestion?: string;
-
-  /** Tags for categorization and filtering */
-  tags: string[];
-
-  /** Line number where the violation occurs (1-indexed, computed by adapters) */
-  line?: number;
-
-  /** Column number where the violation occurs (1-indexed, computed by adapters) */
-  column?: number;
-}
-
-/**
- * Result of scanning a single text input
- */
-export interface ScanResult {
-  /** The original text that was scanned */
-  text: string;
-
-  /** Array of violations found in the text */
-  violations: ViolationNode[];
-
-  /** Total number of violations found */
-  violationCount: number;
-
-  /** Timestamp when the scan was performed */
-  timestamp: Date;
-
-  /** Optional metadata about the scan source */
-  metadata?: Record<string, unknown>;
-}
-
-/**
- * Configuration for a single rule
- */
+/** A single rule, in the same shape as a rule in a RulePack YAML file. */
 export interface Rule {
-  /** Unique identifier for the rule */
+  /** Unique identifier for the rule within its pack. */
   id: string;
 
-  /** Human-readable name */
-  name: string;
-
-  /** Description of what the rule detects */
+  /** What the rule detects; used as the violation message. */
   description: string;
 
-  /** Severity level */
-  severity: Severity;
+  /** Regular expressions to match (JavaScript syntax). */
+  match_regex?: string[];
 
-  /** Whether the rule is enabled */
-  enabled: boolean;
+  /** Keywords to match as whole words. */
+  match_keywords?: string[];
 
-  /** Type of matching strategy */
-  type: RuleType;
+  /** Defaults to 'medium'. */
+  severity?: Severity;
 
-  /** Pattern for regex or keyword rules */
-  pattern?: string;
+  /** Defaults to 'custom'. */
+  category?: Category;
 
-  /** Message template (supports {match} placeholder) */
-  message: string;
+  /** Defaults to true. Disabled rules are skipped when compiling a pack. */
+  enabled?: boolean;
 
-  /** Tags for categorization */
-  tags: string[];
-
-  /** Optional suggestion for remediation */
-  suggestion?: string;
-
-  /** Optional custom validation function */
-  validator?: (text: string, match: string) => boolean;
+  /** Defaults to false. */
+  case_sensitive?: boolean;
 }
 
-/**
- * A collection of related rules (loaded from a YAML file)
- */
+/** A collection of rules, in the same shape as a RulePack YAML file. */
 export interface RulePack {
-  /** Schema version for the rulepack format */
-  schema_version: string;
-
-  /** Version of this specific rulepack */
-  version: string;
-
-  /** Last updated date */
-  last_updated: string;
-
-  /** Human-readable name */
   name: string;
-
-  /** Description of the rulepack's purpose */
   description: string;
-
-  /** Array of rules in this pack */
+  version?: string;
+  last_updated?: string;
   rules: Rule[];
 }
 
 /**
- * Compiled regex strategy for optimized matching
+ * A validated rule ready for the engine. Create one with compileRule() or
+ * compileRulePack(); the fields are read-only metadata about the rule.
  */
-export interface CompiledRegexStrategy {
-  /** The rule this strategy is for */
-  rule: Rule;
-
-  /** Pre-compiled RegExp with global flag for finding all matches */
-  regex: RegExp;
-
-  /** Violation type derived from rule tags */
-  violationType: ViolationType;
+export interface CompiledRule {
+  readonly id: string;
+  readonly description: string;
+  readonly severity: Severity;
+  readonly category: Category;
 }
 
-/**
- * Compiled keyword strategy for optimized matching
- */
-export interface CompiledKeywordStrategy {
-  /** The rule this strategy is for */
-  rule: Rule;
+/** A detected violation. The scanned text is never modified. */
+export interface ViolationNode {
+  /** Identifier of the rule that matched. */
+  ruleId: string;
 
-  /** Normalized keywords to search for */
-  keywords: string[];
+  /** Display name of the rule (its id, as in CLI reports). */
+  ruleName: string;
 
-  /** Whether matching should be case-sensitive */
-  caseSensitive: boolean;
+  /** The rule's description. */
+  message: string;
 
-  /** Violation type derived from rule tags */
-  violationType: ViolationType;
+  category: Category;
+  severity: Severity;
+
+  /** Zero-based offset where the match starts. */
+  start: number;
+
+  /** Zero-based offset where the match ends (exclusive). */
+  end: number;
+
+  /** 1-based line of the match start (omitted when computeLineNumbers is false). */
+  line?: number;
+
+  /** 1-based column of the match start (omitted when computeLineNumbers is false). */
+  column?: number;
+
+  /** The text that matched. */
+  matchText: string;
+
+  /** The match with up to contextLength characters on each side. */
+  context: string;
 }
 
-/**
- * Union type of all compiled strategies
- */
-export type CompiledStrategy = CompiledRegexStrategy | CompiledKeywordStrategy;
+/** Result of scanning one text. */
+export interface ScanResult {
+  /** The text that was scanned. */
+  text: string;
 
-/**
- * Configuration for the rule engine
- */
+  /** Violations ordered by position. */
+  violations: ViolationNode[];
+
+  violationCount: number;
+  timestamp: Date;
+  metadata?: Record<string, unknown>;
+}
+
+/** Options for RuleEngine. */
 export interface EngineConfig {
-  /** Maximum context length to capture around violations (default: 100 chars) */
+  /** Characters of context on each side of a match. Default: 50. */
   contextLength?: number;
 
-  /** Whether to compute line/column positions (adds overhead) */
+  /** Include line and column on each violation. Default: true. */
   computeLineNumbers?: boolean;
 
-  /** Maximum violations to report (default: unlimited) */
+  /** Stop after this many violations per scan. Default: unlimited. */
   maxViolations?: number;
 }
 
-/**
- * Interface for file reading operations (implemented by adapters)
- */
+/** File access used by the Scanner (implemented by NodeFileReader). */
 export interface IFileReader {
-  /**
-   * Read a single file as text
-   * @param path - Path to the file
-   * @returns Promise resolving to file content
-   */
   readFile(path: string): Promise<string>;
-
-  /**
-   * Read multiple files concurrently
-   * @param paths - Array of file paths
-   * @returns Promise resolving to array of file contents
-   */
   readFiles(paths: string[]): Promise<string[]>;
-
-  /**
-   * Load and parse a YAML rulepack file
-   * @param path - Path to the YAML file
-   * @returns Promise resolving to parsed RulePack
-   */
   loadRulePack(path: string): Promise<RulePack>;
-
-  /**
-   * Check if a file exists
-   * @param path - Path to check
-   * @returns Promise resolving to boolean
-   */
   exists(path: string): Promise<boolean>;
 }
 
-/**
- * Interface for reporting scan results (implemented by adapters)
- */
+/** Output of scan results (implemented by NodeReporter). */
 export interface IReporter {
-  /**
-   * Report scan results for a single file
-   * @param filePath - Path to the scanned file
-   * @param result - Scan result containing violations
-   */
   reportFile(filePath: string, result: ScanResult): void;
-
-  /**
-   * Report aggregated results for multiple files
-   * @param results - Map of file paths to scan results
-   */
   reportSummary(results: Map<string, ScanResult>): void;
-
-  /**
-   * Export results in a specific format
-   * @param results - Map of file paths to scan results
-   * @param format - Output format (json, text, etc.)
-   * @returns Formatted output string
-   */
   export(results: Map<string, ScanResult>, format: string): string;
 }
 
-/**
- * Custom error types for domain-specific errors
- */
 export class ConfigurationError extends Error {
   constructor(message: string) {
     super(message);

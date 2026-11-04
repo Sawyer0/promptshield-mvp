@@ -4,16 +4,23 @@
  */
 
 import { glob } from 'glob';
-import { RuleEngine } from '../core/engine.js';
-import { ScanResult, RulePack, ConfigurationError } from '../core/types.js';
-import { compileRulePacks } from '../core/compiler.js';
-import { NodeFileReader } from './fs-loader.js';
+import { RuleEngine } from '../core/engine';
+import { ScanResult, RulePack, ConfigurationError } from '../core/types';
+import { compileRulePacks } from '../core/compiler';
+import {
+  BUNDLED_RULEPACKS_DIR,
+  resolveRulePackPath,
+} from '../shared/packageResources';
+import { NodeFileReader } from './fs-loader';
 
 /**
  * Options for the scanner
  */
 export interface ScannerOptions {
-  /** Path to rules directory or specific rulepack file */
+  /**
+   * A RulePack YAML file, a directory of them, or a bundled pack name
+   * (prompt-injection, pii, bias, hallucination). Default: every bundled pack.
+   */
   rulesPath?: string;
 
   /** Maximum violations to report per file */
@@ -43,9 +50,9 @@ export class Scanner {
   constructor(options: ScannerOptions = {}) {
     this.fileReader = new NodeFileReader();
     this.options = {
-      rulesPath: 'rulepacks',
+      rulesPath: BUNDLED_RULEPACKS_DIR,
       maxViolations: undefined,
-      contextLength: 100,
+      contextLength: 50,
       computeLineNumbers: true,
       include: ['**/*.txt', '**/*.md', '**/*.json'],
       exclude: ['**/node_modules/**', '**/dist/**', '**/.git/**'],
@@ -62,38 +69,35 @@ export class Scanner {
       throw new ConfigurationError('Rules path not specified');
     }
 
+    const rulesPath =
+      resolveRulePackPath(this.options.rulesPath) ?? this.options.rulesPath;
+
     try {
-      // Check if rulesPath is a file or directory
-      const isFile =
-        this.options.rulesPath.endsWith('.yaml') ||
-        this.options.rulesPath.endsWith('.yml');
+      const isFile = rulesPath.endsWith('.yaml') || rulesPath.endsWith('.yml');
 
       let rulePacks: RulePack[];
 
       if (isFile) {
         // Load single rulepack
-        const pack = await this.fileReader.loadRulePack(this.options.rulesPath);
+        const pack = await this.fileReader.loadRulePack(rulesPath);
         rulePacks = [pack];
       } else {
         // Load all rulepacks from directory
-        rulePacks = await this.fileReader.loadRulePacksFromDirectory(
-          this.options.rulesPath
-        );
+        rulePacks = await this.fileReader.loadRulePacksFromDirectory(rulesPath);
       }
 
       if (rulePacks.length === 0) {
         throw new ConfigurationError('No rulepacks found');
       }
 
-      // Compile rulepacks into strategies
-      const strategies = compileRulePacks(rulePacks);
+      const rules = compileRulePacks(rulePacks);
 
-      if (strategies.length === 0) {
+      if (rules.length === 0) {
         throw new ConfigurationError('No enabled rules found in rulepacks');
       }
 
       // Create rule engine
-      this.engine = new RuleEngine(strategies, {
+      this.engine = new RuleEngine(rules, {
         maxViolations: this.options.maxViolations,
         contextLength: this.options.contextLength,
         computeLineNumbers: this.options.computeLineNumbers,
@@ -151,11 +155,11 @@ export class Scanner {
 
   /**
    * Scan files matching glob patterns
-   * @param patterns - Glob patterns to match
+   * @param patterns - Glob patterns to match (default: the include option)
    * @returns Map of file paths to scan results
    */
   async scanGlob(
-    patterns: string | string[]
+    patterns: string | string[] = this.options.include ?? []
   ): Promise<Map<string, ScanResult>> {
     const patternArray = Array.isArray(patterns) ? patterns : [patterns];
 
@@ -197,7 +201,7 @@ export class Scanner {
    */
   getStats(): { ruleCount: number; options: ScannerOptions } {
     return {
-      ruleCount: this.engine?.getStrategyCount() ?? 0,
+      ruleCount: this.engine?.getRuleCount() ?? 0,
       options: this.options,
     };
   }
