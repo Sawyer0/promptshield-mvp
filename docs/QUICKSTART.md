@@ -92,7 +92,7 @@ promptshield init my-rules.yaml
 
 ```bash
 # Validate your RulePack structure
-promptshield validate --rulepack my-rules.yaml
+promptshield validate my-rules.yaml
 
 # Validate input data file
 promptshield validate data.json
@@ -167,20 +167,17 @@ PromptShield supports both **single objects** and **arrays**:
 
 ```bash
 # Regular JSON arrays
-promptshield scan data.json
+promptshield scan data.json -r my-rules.yaml
 
-# NDJSON (newline-delimited JSON)
-promptshield scan data.ndjson --ndjson
+# NDJSON (newline-delimited JSON; detected from .ndjson/.jsonl)
+promptshield scan data.ndjson -r my-rules.yaml
 ```
 
 ### Text Files
 
 ```bash
 # Plain text files
-promptshield scan content.txt
-
-# Markdown files
-promptshield scan documentation.md
+promptshield scan content.txt -r my-rules.yaml
 ```
 
 ## 🛡️ Example RulePacks
