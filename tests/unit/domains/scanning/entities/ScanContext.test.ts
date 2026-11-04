@@ -1,7 +1,8 @@
 import { describe, test, expect } from '@jest/globals';
 import { ScanContext } from '../../../../../src/domains/scanning/core/entities/ScanContext';
 import {
-  createScanConfig, createScanContext,
+  createScanConfig,
+  createScanContext,
   createRulePack,
 } from '../../../../helpers/testFactories';
 
@@ -391,10 +392,3 @@ describe('ScanContext', () => {
     });
   });
 });
-
-
-
-
-
-
-

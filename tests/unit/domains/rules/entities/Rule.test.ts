@@ -44,62 +44,50 @@ describe('Rule', () => {
     });
 
     test('should throw error if ID is empty', () => {
-      expect(() => new Rule('', 'desc', [], ['test'])).toThrow('Rule ID is required');
+      expect(() => new Rule('', 'desc', [], ['test'])).toThrow(
+        'Rule ID is required'
+      );
     });
 
     test('should throw error if description is empty', () => {
-      expect(() => new Rule('id', '', [], ['test'])).toThrow('Rule description is required');
+      expect(() => new Rule('id', '', [], ['test'])).toThrow(
+        'Rule description is required'
+      );
     });
 
     test('should throw error if no patterns are provided', () => {
-      expect(() => new Rule('id', 'desc', [], [])).toThrow('Rule must have either match_regex or match_keywords');
+      expect(() => new Rule('id', 'desc', [], [])).toThrow(
+        'Rule must have either match_regex or match_keywords'
+      );
     });
 
     test('should throw error for invalid regex', () => {
-      expect(() => new Rule('id', 'desc', ['['], [])).toThrow('Invalid regex pattern: [');
+      expect(() => new Rule('id', 'desc', ['['], [])).toThrow(
+        'Invalid regex pattern: ['
+      );
     });
   });
 
   describe('hasRegexPatterns', () => {
     test('should return true when regex patterns exist', () => {
-      const rule = new Rule(
-        'test',
-        'test',
-        ['\\btest\\b'],
-        []
-      );
+      const rule = new Rule('test', 'test', ['\\btest\\b'], []);
       expect(rule.hasRegexPatterns()).toBe(true);
     });
 
     test('should return false when no regex patterns exist', () => {
-      const rule = new Rule(
-        'test',
-        'test',
-        [],
-        ['keyword']
-      );
+      const rule = new Rule('test', 'test', [], ['keyword']);
       expect(rule.hasRegexPatterns()).toBe(false);
     });
   });
 
   describe('hasKeywordPatterns', () => {
     test('should return true when keyword patterns exist', () => {
-      const rule = new Rule(
-        'test',
-        'test',
-        [],
-        ['keyword']
-      );
+      const rule = new Rule('test', 'test', [], ['keyword']);
       expect(rule.hasKeywordPatterns()).toBe(true);
     });
 
     test('should return false when no keyword patterns exist', () => {
-      const rule = new Rule(
-        'test',
-        'test',
-        ['\\btest\\b'],
-        []
-      );
+      const rule = new Rule('test', 'test', ['\\btest\\b'], []);
       expect(rule.hasKeywordPatterns()).toBe(false);
     });
   });
@@ -120,7 +108,7 @@ describe('Rule', () => {
     test('should return compiled RegEx objects', () => {
       const rule = new Rule('test', 'test', ['test1', 'test2'], []);
       const regexes = rule.getCompiledRegexPatterns();
-      
+
       expect(regexes).toHaveLength(2);
       expect(regexes[0]).toBeInstanceOf(RegExp);
       expect(regexes[0].source).toBe('test1');
@@ -128,31 +116,80 @@ describe('Rule', () => {
     });
 
     test('should handle case sensitivity', () => {
-      const caseInsensitiveRule = new Rule('test', 'test', ['test'], [], 'medium', 'custom', true, false);
-      const caseSensitiveRule = new Rule('test', 'test', ['test'], [], 'medium', 'custom', true, true);
-      
-      expect(caseInsensitiveRule.getCompiledRegexPatterns()[0].flags).toContain('i');
-      expect(caseSensitiveRule.getCompiledRegexPatterns()[0].flags).not.toContain('i');
+      const caseInsensitiveRule = new Rule(
+        'test',
+        'test',
+        ['test'],
+        [],
+        'medium',
+        'custom',
+        true,
+        false
+      );
+      const caseSensitiveRule = new Rule(
+        'test',
+        'test',
+        ['test'],
+        [],
+        'medium',
+        'custom',
+        true,
+        true
+      );
+
+      expect(caseInsensitiveRule.getCompiledRegexPatterns()[0].flags).toContain(
+        'i'
+      );
+      expect(
+        caseSensitiveRule.getCompiledRegexPatterns()[0].flags
+      ).not.toContain('i');
     });
   });
 
   describe('getNormalizedKeywords', () => {
     test('should lowercase keywords when case insensitive', () => {
-      const rule = new Rule('test', 'test', [], ['KEYWORD', 'MixedCase'], 'medium', 'custom', true, false);
+      const rule = new Rule(
+        'test',
+        'test',
+        [],
+        ['KEYWORD', 'MixedCase'],
+        'medium',
+        'custom',
+        true,
+        false
+      );
       expect(rule.getNormalizedKeywords()).toEqual(['keyword', 'mixedcase']);
     });
 
     test('should preserve case when case sensitive', () => {
-      const rule = new Rule('test', 'test', [], ['KEYWORD', 'MixedCase'], 'medium', 'custom', true, true);
+      const rule = new Rule(
+        'test',
+        'test',
+        [],
+        ['KEYWORD', 'MixedCase'],
+        'medium',
+        'custom',
+        true,
+        true
+      );
       expect(rule.getNormalizedKeywords()).toEqual(['KEYWORD', 'MixedCase']);
     });
   });
 
   describe('YAML conversion', () => {
     test('should convert to YAML data', () => {
-      const rule = new Rule('test-id', 'test-desc', ['regex'], ['keyword'], 'high', 'security', true, true);
+      const rule = new Rule(
+        'test-id',
+        'test-desc',
+        ['regex'],
+        ['keyword'],
+        'high',
+        'security',
+        true,
+        true
+      );
       const yaml = rule.toYaml();
-      
+
       expect(yaml.id).toBe('test-id');
       expect(yaml.description).toBe('test-desc');
       expect(yaml.match_regex).toEqual(['regex']);
@@ -170,11 +207,11 @@ describe('Rule', () => {
         match_regex: ['regex-pattern'],
         severity: 'critical',
         category: 'pii',
-        enabled: false
+        enabled: false,
       };
-      
+
       const rule = Rule.fromYaml(yamlData);
-      
+
       expect(rule.id).toBe('yaml-id');
       expect(rule.description).toBe('yaml-desc');
       expect(rule.matchRegex).toEqual(['regex-pattern']);

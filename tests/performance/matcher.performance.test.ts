@@ -21,7 +21,8 @@ describe('Matcher Performance Benchmark', () => {
   };
 
   const generateContent = (sizeKb: number): string => {
-    const base = 'This is some random content with keywords and patterns like pattern-5-123 and keyword10. ';
+    const base =
+      'This is some random content with keywords and patterns like pattern-5-123 and keyword10. ';
     return base.repeat((sizeKb * 1024) / base.length);
   };
 
@@ -41,7 +42,9 @@ describe('Matcher Performance Benchmark', () => {
     const end = performance.now();
     const avgTime = (end - start) / iterations;
 
-    console.log(`Rules: ${ruleCount.toString().padEnd(5)} | Content: ${contentSizeKb.toString().padEnd(5)} KB | Avg Time: ${avgTime.toFixed(4)} ms`);
+    console.log(
+      `Rules: ${ruleCount.toString().padEnd(5)} | Content: ${contentSizeKb.toString().padEnd(5)} KB | Avg Time: ${avgTime.toFixed(4)} ms`
+    );
     return avgTime;
   };
 

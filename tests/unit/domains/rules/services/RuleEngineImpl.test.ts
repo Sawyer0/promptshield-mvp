@@ -1,6 +1,9 @@
 import { describe, test, expect, beforeEach, jest } from '@jest/globals';
 import { DefaultRuleEngine } from '../../../../../src/domains/rules/core/services/RuleEngineImpl';
-import { RuleRepository, RuleMatcher } from '../../../../../src/domains/rules/core/ports/RuleEngine';
+import {
+  RuleRepository,
+  RuleMatcher,
+} from '../../../../../src/domains/rules/core/ports/RuleEngine';
 import { ok, err } from '../../../../../src/shared/types/Result';
 import { createRule, createRulePack } from '../../../../helpers/testFactories';
 
@@ -48,7 +51,7 @@ describe('DefaultRuleEngine', () => {
         matched: true,
         position: { start: 0, end: 4, line: 1, column: 1 },
         context: { before: '', match: 'test', after: ' content' },
-        pattern: 'test'
+        pattern: 'test',
       };
 
       mockMatcher.matchAll.mockReturnValue(new Map([[rules[0], [mockMatch]]]));

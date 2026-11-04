@@ -3,7 +3,10 @@ import { DefaultScanOrchestrator } from '../../../../../src/domains/scanning/cor
 import { ScanRequest } from '../../../../../src/domains/scanning/core/entities/ScanRequest';
 import { ScanResult } from '../../../../../src/domains/scanning/core/entities/ScanResult';
 import { ok, err } from '../../../../../src/shared/types/Result';
-import { createScanConfig, createRulePack } from '../../../../helpers/testFactories';
+import {
+  createScanConfig,
+  createRulePack,
+} from '../../../../helpers/testFactories';
 
 describe('DefaultScanOrchestrator', () => {
   let orchestrator: DefaultScanOrchestrator;
@@ -17,14 +20,18 @@ describe('DefaultScanOrchestrator', () => {
     mockFileReader = {
       exists: (jest.fn() as any).mockResolvedValue(true),
       readFile: (jest.fn() as any).mockResolvedValue(ok('test content')),
-      findFiles: (jest.fn() as any).mockResolvedValue(ok(['file1.json', 'file2.json'])),
+      findFiles: (jest.fn() as any).mockResolvedValue(
+        ok(['file1.json', 'file2.json'])
+      ),
       isDirectory: (jest.fn() as any).mockResolvedValue(false),
       getFileSize: (jest.fn() as any).mockResolvedValue(ok(100)),
     };
 
     const mockProcessor = {
       canProcess: (jest.fn() as any).mockReturnValue(true),
-      process: (jest.fn() as any).mockResolvedValue(ok([{ data: { content: 'test' } }])),
+      process: (jest.fn() as any).mockResolvedValue(
+        ok([{ data: { content: 'test' } }])
+      ),
       shouldUseStreaming: (jest.fn() as any).mockReturnValue(false),
       processStream: (jest.fn() as any).mockResolvedValue(ok(undefined)),
     };

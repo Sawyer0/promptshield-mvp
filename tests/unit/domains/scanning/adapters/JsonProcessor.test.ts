@@ -1,6 +1,9 @@
 import { describe, test, expect, beforeEach } from '@jest/globals';
 import { JsonProcessor } from '../../../../../src/domains/scanning/adapters/processors/JsonProcessor';
-import { createScanConfig, createScanContext } from '../../../../helpers/testFactories';
+import {
+  createScanConfig,
+  createScanContext,
+} from '../../../../helpers/testFactories';
 
 describe('JsonProcessor', () => {
   let processor: JsonProcessor;
@@ -33,7 +36,7 @@ describe('JsonProcessor', () => {
     test('should process simple JSON object', async () => {
       const input = '{"prompt": "test", "response": "answer"}';
       const context = createScanContext({
-        fields: ['prompt', 'response']
+        fields: ['prompt', 'response'],
       });
 
       const result = await processor.process(input, context);
@@ -122,7 +125,7 @@ describe('JsonProcessor', () => {
       const input =
         '{"id": 1, "text": "First"}\n{"id": 2, "text": "Second"}\n{"id": 3, "text": "Third"}';
       const context = createScanContext({
-        ndjsonMode: true
+        ndjsonMode: true,
       });
 
       const result = await processor.process(input, context);
@@ -140,7 +143,7 @@ describe('JsonProcessor', () => {
     test('should process NDJSON with empty lines', async () => {
       const input = '{"id": 1}\n\n{"id": 2}\n\n\n{"id": 3}';
       const context = createScanContext({
-        ndjsonMode: true
+        ndjsonMode: true,
       });
 
       const result = await processor.process(input, context);
@@ -156,7 +159,7 @@ describe('JsonProcessor', () => {
     test('should process NDJSON with whitespace', async () => {
       const input = '  {"id": 1}  \n\t{"id": 2}\t\n   {"id": 3}   ';
       const context = createScanContext({
-        ndjsonMode: true
+        ndjsonMode: true,
       });
 
       const result = await processor.process(input, context);
@@ -171,7 +174,7 @@ describe('JsonProcessor', () => {
     test('should handle single line NDJSON', async () => {
       const input = '{"single": "line"}';
       const context = createScanContext({
-        ndjsonMode: true
+        ndjsonMode: true,
       });
 
       const result = await processor.process(input, context);
@@ -197,8 +200,8 @@ describe('JsonProcessor', () => {
         },
       ]);
       const context = createScanContext({
-          fields: ['prompt', 'response'],
-        });
+        fields: ['prompt', 'response'],
+      });
 
       const result = await processor.process(input, context);
 
@@ -207,7 +210,10 @@ describe('JsonProcessor', () => {
         const objects = result.value;
         expect(objects).toHaveLength(2);
         expect(objects[0].fields).toEqual({ prompt: 'Hello', response: 'Hi' });
-        expect(objects[1].fields).toEqual({ prompt: 'How are you?', response: 'Good' });
+        expect(objects[1].fields).toEqual({
+          prompt: 'How are you?',
+          response: 'Good',
+        });
       }
     });
 
@@ -216,9 +222,9 @@ describe('JsonProcessor', () => {
         { prompt: 'Hello', response: 'Hi', metadata: { important: 'data' } },
       ]);
       const context = createScanContext({
-          fields: ['prompt', 'response'],
-          scanEntireObject: true,
-        });
+        fields: ['prompt', 'response'],
+        scanEntireObject: true,
+      });
 
       const result = await processor.process(input, context);
 
@@ -321,8 +327,3 @@ describe('JsonProcessor', () => {
     });
   });
 });
-
-
-
-
-
