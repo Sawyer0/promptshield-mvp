@@ -35,7 +35,11 @@ export interface RuleEngine {
 }
 
 export interface RuleMatcher {
+  /** Matches content against a single rule. */
   match(content: string, rule: Rule): MatchResult[];
+
+  /** Matches content against every enabled rule in one call. */
+  matchAll(content: string, rules: Rule[]): Map<Rule, MatchResult[]>;
 }
 
 export interface MatchResult {

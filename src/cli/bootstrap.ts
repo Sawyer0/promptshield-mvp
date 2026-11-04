@@ -9,10 +9,7 @@ import { JsonProcessor } from '../domains/scanning/adapters/processors/JsonProce
 import { TextProcessor } from '../domains/scanning/adapters/processors/TextProcessor';
 import { DefaultScanOrchestrator } from '../domains/scanning/core/services/ScanOrchestrator';
 import { YamlRuleRepository } from '../domains/rules/adapters/YamlRuleRepository';
-import {
-  DefaultRuleEngine,
-  DefaultRuleMatcher,
-} from '../domains/rules/core/services/RuleEngineImpl';
+import { DefaultRuleEngine } from '../domains/rules/core/services/RuleEngineImpl';
 import { OptimizedRuleMatcher } from '../domains/rules/core/services/OptimizedRuleMatcher';
 import { JsonRenderer } from '../domains/reporting/adapters/renderers/JsonRenderer';
 import { MarkdownRenderer } from '../domains/reporting/adapters/renderers/MarkdownRenderer';
@@ -83,14 +80,7 @@ export function setupContainer(container: Container): void {
 
   container.registerFactory(
     'ruleMatcher',
-    () => {
-      // Use OptimizedRuleMatcher for O(n) performance
-      // Can switch to DefaultRuleMatcher if needed for debugging
-      const useOptimized = process.env.USE_OPTIMIZED_MATCHER !== 'false';
-      return useOptimized
-        ? new OptimizedRuleMatcher()
-        : new DefaultRuleMatcher();
-    },
+    () => new OptimizedRuleMatcher(),
     true
   );
 
