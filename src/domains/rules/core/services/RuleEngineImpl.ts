@@ -56,47 +56,18 @@ export class DefaultRuleEngine implements RuleEngine {
   ): Promise<Result<Violation[], Error>> {
     try {
       const violations: Violation[] = [];
+      const enabledRules = rules.filter((rule) => rule.enabled);
 
-      // Check if matcher supports optimized batch matching
-      if (
-        'matchAll' in this.matcher &&
-        typeof this.matcher.matchAll === 'function'
-      ) {
-        // Use optimized O(n) single-pass matching
-        for (const [fieldName, fieldValue] of Object.entries(fields)) {
-          if (!fieldValue) continue;
+      for (const [fieldName, fieldValue] of Object.entries(fields)) {
+        if (!fieldValue) continue;
 
-          const matchResults = this.matcher.matchAll(
-            fieldValue,
-            rules.filter((r) => r.enabled)
-          );
-
-          for (const [rule, matches] of matchResults) {
-            for (const match of matches) {
-              if (match.matched) {
-                violations.push(
-                  this.createViolation(rule, fieldName, match, metadata)
-                );
-              }
-            }
-          }
-        }
-      } else {
-        // Fallback to sequential matching for backward compatibility
-        for (const rule of rules) {
-          if (!rule.enabled) continue;
-
-          for (const [fieldName, fieldValue] of Object.entries(fields)) {
-            if (!fieldValue) continue;
-
-            const matches = this.matcher.match(fieldValue, rule);
-
-            for (const match of matches) {
-              if (match.matched) {
-                violations.push(
-                  this.createViolation(rule, fieldName, match, metadata)
-                );
-              }
+        const matchResults = this.matcher.matchAll(fieldValue, enabledRules);
+        for (const [rule, matches] of matchResults) {
+          for (const match of matches) {
+            if (match.matched) {
+              violations.push(
+                this.createViolation(rule, fieldName, match, metadata)
+              );
             }
           }
         }
@@ -158,114 +129,5 @@ export class DefaultRuleEngine implements RuleEngine {
         tags: [],
       },
     };
-  }
-}
-
-/**
- * Default implementation of rule matcher
- */
-export class DefaultRuleMatcher implements RuleMatcher {
-  match(content: string, rule: Rule): MatchResult[] {
-    const matches: MatchResult[] = [];
-
-    if (rule.hasRegexPatterns()) {
-      const regexMatches = this.matchRegexPatterns(content, rule);
-      matches.push(...regexMatches);
-    }
-
-    if (rule.hasKeywordPatterns()) {
-      const keywordMatches = this.matchKeywordPatterns(content, rule);
-      matches.push(...keywordMatches);
-    }
-
-    return matches;
-  }
-
-  private matchRegexPatterns(content: string, rule: Rule): MatchResult[] {
-    const matches: MatchResult[] = [];
-    const patterns = rule.getCompiledRegexPatterns();
-
-    for (const pattern of patterns) {
-      let match;
-      while ((match = pattern.exec(content)) !== null) {
-        const start = match.index;
-        const end = start + match[0].length;
-
-        matches.push({
-          matched: true,
-          position: {
-            start,
-            end,
-            line: this.getLineNumber(content, start),
-            column: this.getColumnNumber(content, start),
-          },
-          context: this.getContext(content, start, end),
-          pattern: pattern.source,
-        });
-      }
-    }
-
-    return matches;
-  }
-
-  private matchKeywordPatterns(content: string, rule: Rule): MatchResult[] {
-    const matches: MatchResult[] = [];
-    const keywords = rule.getNormalizedKeywords();
-    const searchContent = rule.caseSensitive ? content : content.toLowerCase();
-
-    for (const keyword of keywords) {
-      let index = 0;
-      while ((index = searchContent.indexOf(keyword, index)) !== -1) {
-        const start = index;
-        const end = start + keyword.length;
-
-        matches.push({
-          matched: true,
-          position: {
-            start,
-            end,
-            line: this.getLineNumber(content, start),
-            column: this.getColumnNumber(content, start),
-          },
-          context: this.getContext(content, start, end),
-          pattern: keyword,
-        });
-
-        index = end;
-      }
-    }
-
-    return matches;
-  }
-
-  private getContext(
-    content: string,
-    start: number,
-    end: number,
-    contextSize: number = 50
-  ): {
-    before: string;
-    match: string;
-    after: string;
-  } {
-    const beforeStart = Math.max(0, start - contextSize);
-    const afterEnd = Math.min(content.length, end + contextSize);
-
-    return {
-      before: content.substring(beforeStart, start),
-      match: content.substring(start, end),
-      after: content.substring(end, afterEnd),
-    };
-  }
-
-  private getLineNumber(content: string, position: number): number {
-    const lines = content.substring(0, position).split('\n');
-    return lines.length;
-  }
-
-  private getColumnNumber(content: string, position: number): number {
-    const lines = content.substring(0, position).split('\n');
-    const lastLine = lines[lines.length - 1];
-    return lastLine.length + 1;
   }
 }
