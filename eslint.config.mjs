@@ -46,5 +46,12 @@ export default defineConfig([
     languageOptions: {
       globals: { ...globals.node, ...globals.jest },
     },
+    rules: {
+      // Tests build deliberately malformed inputs and partial mocks
+      '@typescript-eslint/no-explicit-any': 'off',
+    },
+  },
+  {
+    ignores: ['dist/', 'coverage/', 'node_modules/'],
   },
 ]);

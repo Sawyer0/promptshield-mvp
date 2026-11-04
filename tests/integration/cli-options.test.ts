@@ -15,7 +15,6 @@ import { CsvRenderer } from '../../src/domains/reporting/adapters/renderers/CsvR
 import { TableRenderer } from '../../src/domains/reporting/adapters/renderers/TableRenderer';
 import { Report } from '../../src/domains/reporting/core/entities/Report';
 import { Violation } from '../../src/shared/types/Violation';
-import { DefaultValidationEngine } from '../../src/domains/validation/core/services/ValidationEngineImpl';
 import { ValidationOptions } from '../../src/domains/validation/core/entities/ValidationOptions';
 import { ScanMetrics } from '../../src/shared/types/ScanMetrics';
 import { stripAnsiCodes } from '../utils/cli';
@@ -81,9 +80,6 @@ describe('CLI Options and Behavior', () => {
       renderers.set('table', new TableRenderer());
 
       const reportService = new ReportServiceImpl(renderers, mockFs, mockPath);
-      const scanResult = createScanResult([]);
-      const report = new Report(scanResult, 'json');
-
       const formats = reportService.getAvailableFormats();
       expect(formats).toContain('json');
       expect(formats).toContain('csv');
@@ -112,7 +108,6 @@ describe('CLI Options and Behavior', () => {
 
   describe('Validation Options', () => {
     it('should respect strict mode', async () => {
-      const validationEngine = new DefaultValidationEngine(mockFs, mockPath);
       const options: ValidationOptions = {
         strict: true,
         verbose: false,

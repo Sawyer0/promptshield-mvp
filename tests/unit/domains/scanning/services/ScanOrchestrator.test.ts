@@ -1,8 +1,7 @@
 import { describe, test, expect, beforeEach, jest } from '@jest/globals';
 import { DefaultScanOrchestrator } from '../../../../../src/domains/scanning/core/services/ScanOrchestrator';
 import { ScanRequest } from '../../../../../src/domains/scanning/core/entities/ScanRequest';
-import { ScanResult } from '../../../../../src/domains/scanning/core/entities/ScanResult';
-import { ok, err } from '../../../../../src/shared/types/Result';
+import { ok } from '../../../../../src/shared/types/Result';
 import {
   createScanConfig,
   createRulePack,

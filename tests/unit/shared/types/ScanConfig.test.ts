@@ -1,9 +1,5 @@
 import { describe, test, expect } from '@jest/globals';
-import { ScanConfig } from '../../../../src/shared/types/ScanConfig';
-import {
-  createScanConfig,
-  createScanContext,
-} from '../../../helpers/testFactories';
+import { createScanConfig } from '../../../helpers/testFactories';
 
 describe('ScanConfig', () => {
   describe('creation', () => {

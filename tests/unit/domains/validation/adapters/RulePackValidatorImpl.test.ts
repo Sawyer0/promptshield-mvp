@@ -3,6 +3,7 @@ import { RulePackValidatorImpl } from '../../../../../src/domains/validation/ada
 import { ValidationOptions } from '../../../../../src/domains/validation/core/entities/ValidationOptions';
 import { RuleYamlData } from '../../../../../src/shared/types/YamlData';
 import * as fs from 'fs';
+import * as os from 'os';
 import * as path from 'path';
 
 describe('RulePackValidatorImpl', () => {
@@ -11,9 +12,7 @@ describe('RulePackValidatorImpl', () => {
 
   beforeEach(() => {
     validator = new RulePackValidatorImpl();
-    tempDir = fs.mkdtempSync(
-      path.join(require('os').tmpdir(), 'promptshield-test-')
-    );
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'promptshield-test-'));
   });
 
   describe('supports', () => {

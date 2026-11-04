@@ -4,7 +4,7 @@ import {
   RuleRepository,
   RuleMatcher,
 } from '../../../../../src/domains/rules/core/ports/RuleEngine';
-import { ok, err } from '../../../../../src/shared/types/Result';
+import { ok } from '../../../../../src/shared/types/Result';
 import { createRule, createRulePack } from '../../../../helpers/testFactories';
 
 describe('DefaultRuleEngine', () => {

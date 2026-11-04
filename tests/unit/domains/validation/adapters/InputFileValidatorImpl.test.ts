@@ -1,8 +1,8 @@
 import { describe, test, expect, beforeEach } from '@jest/globals';
 import { InputFileValidatorImpl } from '../../../../../src/domains/validation/adapters/validators/InputFileValidatorImpl';
 import { ValidationOptions } from '../../../../../src/domains/validation/core/entities/ValidationOptions';
-import { createValidationResult } from '../../../../helpers/testFactories';
 import * as fs from 'fs';
+import * as os from 'os';
 import * as path from 'path';
 
 describe('InputFileValidatorImpl', () => {
@@ -11,9 +11,7 @@ describe('InputFileValidatorImpl', () => {
 
   beforeEach(() => {
     validator = new InputFileValidatorImpl();
-    tempDir = fs.mkdtempSync(
-      path.join(require('os').tmpdir(), 'promptshield-test-')
-    );
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'promptshield-test-'));
   });
 
   describe('supports', () => {
