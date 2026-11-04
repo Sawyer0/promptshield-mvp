@@ -3,6 +3,7 @@ import { Report } from '../../core/entities/Report';
 import { Result, ok, err } from '../../../../shared/types/Result';
 import { ViolationUtils } from '../../../../shared/types/Violation';
 import { ScanMetricsUtils } from '../../../../shared/types/ScanMetrics';
+import { PACKAGE_VERSION } from '../../../../shared/packageResources';
 
 /**
  * Table format renderer
@@ -91,7 +92,7 @@ export class TableRenderer implements Renderer {
       }
 
       // Footer
-      output += `Generated at ${new Date().toISOString()} by PromptShield v1.0.4\n`;
+      output += `Generated at ${new Date().toISOString()} by PromptShield v${PACKAGE_VERSION}\n`;
 
       return ok(output);
     } catch (error) {

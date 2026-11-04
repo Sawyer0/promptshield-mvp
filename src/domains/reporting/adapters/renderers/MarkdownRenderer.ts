@@ -4,6 +4,7 @@ import { Result, ok, err } from '../../../../shared/types/Result';
 import { ViolationUtils, Violation } from '../../../../shared/types/Violation';
 import { ScanMetricsUtils } from '../../../../shared/types/ScanMetrics';
 import chalk from 'chalk';
+import { PACKAGE_VERSION } from '../../../../shared/packageResources';
 
 /**
  * Markdown format renderer
@@ -39,8 +40,7 @@ export class MarkdownRenderer implements Renderer {
         }
 
         // Scanning progress with violations found
-        const inputFile =
-          report.options.inputFile || 'examples/real-world-injections.json';
+        const inputFile = report.options.inputFile || 'input';
         if (summary.total > 0) {
           const progressBar = '█'.repeat(
             Math.min(12, Math.ceil(summary.total / 4))
@@ -233,7 +233,7 @@ export class MarkdownRenderer implements Renderer {
             '✅ No safety violations detected in the scanned content.\n\n';
         }
 
-        output += `*Generated at ${new Date().toISOString()} by PromptShield v1.0.0*\n`;
+        output += `*Generated at ${new Date().toISOString()} by PromptShield v${PACKAGE_VERSION}*\n`;
       }
 
       return ok(output);

@@ -53,11 +53,16 @@ export class ScanCommandHandler {
         includeMetrics: !scanConfig.quiet,
         verbose: scanConfig.verbose,
         quiet: scanConfig.quiet,
-        noColor: scanConfig.noColor,
+        // Terminal styling only when printing to an interactive terminal;
+        // files and pipes get plain output (real Markdown for -o markdown).
+        noColor:
+          scanConfig.noColor ||
+          Boolean(scanConfig.outputFile) ||
+          !process.stdout.isTTY,
         outputFile: scanConfig.outputFile,
         compress: scanConfig.compress,
         compressionLevel: scanConfig.compressionLevel,
-        inputFile: command.input,
+        inputFile: command.isRawContent ? 'stdin' : command.input,
       });
 
       // Generate and output report

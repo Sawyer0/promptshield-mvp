@@ -3,6 +3,7 @@ import { Report } from '../../core/entities/Report';
 import { Result, ok, err } from '../../../../shared/types/Result';
 import { ViolationUtils, Violation } from '../../../../shared/types/Violation';
 import { ScanMetricsUtils } from '../../../../shared/types/ScanMetrics';
+import { PACKAGE_VERSION } from '../../../../shared/packageResources';
 
 /**
  * JSON format renderer
@@ -74,7 +75,7 @@ export class JsonRenderer implements Renderer {
       // Include metadata
       output.metadata = {
         generated_at: new Date().toISOString(),
-        version: '1.0.0',
+        version: PACKAGE_VERSION,
       };
 
       const jsonString = report.options.verbose
