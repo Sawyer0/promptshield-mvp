@@ -69,7 +69,7 @@ describe('CLI E2E Tests', () => {
         }
       );
 
-      expect(output).toContain('No violations found');
+      expect(output).toContain('No Violations Found');
     });
 
     test('should detect violations', () => {

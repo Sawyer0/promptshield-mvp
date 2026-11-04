@@ -11,11 +11,12 @@ describe('DefaultRuleEngine', () => {
 
   beforeEach(() => {
     mockRepository = {
-      loadFromYaml: (jest.fn() as any),
-      saveToYaml: (jest.fn() as any),
+      loadFromYaml: jest.fn<RuleRepository['loadFromYaml']>(),
+      saveToYaml: jest.fn<RuleRepository['saveToYaml']>(),
     };
     mockMatcher = {
-      match: (jest.fn() as any),
+      match: jest.fn<RuleMatcher['match']>(),
+      matchAll: jest.fn<RuleMatcher['matchAll']>(),
     };
     engine = new DefaultRuleEngine(mockRepository, mockMatcher);
   });
@@ -50,15 +51,32 @@ describe('DefaultRuleEngine', () => {
         pattern: 'test'
       };
 
-      mockMatcher.match.mockReturnValue([mockMatch]);
+      mockMatcher.matchAll.mockReturnValue(new Map([[rules[0], [mockMatch]]]));
 
-      const result = await engine.applyRules(fields, rules);
+      const result = await engine.applyRules(fields, rules, { index: 3 });
 
       expect(result.isOk()).toBe(true);
       if (result.isOk()) {
         expect(result.value).toHaveLength(1);
         expect(result.value[0].ruleId).toBe(rules[0].id);
+        expect(result.value[0].field).toBe('content');
+        expect(result.value[0].objectIndex).toBe(3);
+        expect(result.value[0].position).toEqual(mockMatch.position);
       }
+    });
+
+    test('passes only enabled rules to the matcher and skips empty fields', async () => {
+      const enabled = createRule({ id: 'on' });
+      const disabled = createRule({ id: 'off', enabled: false });
+      mockMatcher.matchAll.mockReturnValue(new Map());
+
+      await engine.applyRules({ prompt: 'hi', response: '' }, [
+        enabled,
+        disabled,
+      ]);
+
+      expect(mockMatcher.matchAll).toHaveBeenCalledTimes(1);
+      expect(mockMatcher.matchAll).toHaveBeenCalledWith('hi', [enabled]);
     });
   });
 });

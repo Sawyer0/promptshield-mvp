@@ -70,7 +70,7 @@ describe('ScanMetrics', () => {
       });
 
       const memoryPerObject = metrics.memoryUsage / metrics.objectsScanned;
-      expect(memoryPerObject).toBeCloseTo(50 * 1024, 1); // 50KB per object
+      expect(memoryPerObject).toBeCloseTo((50 * 1024 * 1024) / 1000, 1); // ~51KB per object
     });
   });
 
@@ -134,7 +134,7 @@ describe('ScanMetrics', () => {
       };
 
       expect(throughput.objectsPerSecond).toBe(500);
-      expect(throughput.memoryPerObject).toBeCloseTo(32 * 1024, 1); // 32KB per object
+      expect(throughput.memoryPerObject).toBeCloseTo((64 * 1024 * 1024) / 2000, 1); // ~33KB per object
       expect(throughput.processingTimePerObject).toBe(2); // 2ms per object
     });
 

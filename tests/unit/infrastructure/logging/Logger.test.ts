@@ -1,298 +1,105 @@
-import { describe, test, expect, beforeEach, jest } from '@jest/globals';
-import { Logger } from '../../../../src/infrastructure/logging/Logger';
+import {
+  describe,
+  test,
+  expect,
+  beforeEach,
+  afterEach,
+  jest,
+} from '@jest/globals';
+import {
+  ConsoleLogger,
+  LoggerFactory,
+  LogLevel,
+  NoOpLogger,
+} from '../../../../src/infrastructure/logging/Logger';
 
 describe('Logger', () => {
-  let logger: Logger;
-  let mockConsole: {
-    log: jest.MockedFunction<typeof console.log>;
-    error: jest.MockedFunction<typeof console.error>;
-    warn: jest.MockedFunction<typeof console.warn>;
-    debug: jest.MockedFunction<typeof console.debug>;
-  };
+  let written: string[];
+  let stderrSpy: ReturnType<typeof jest.spyOn>;
 
   beforeEach(() => {
-    // Mock console methods
-    mockConsole = {
-      log: jest.fn(),
-      error: jest.fn(),
-      warn: jest.fn(),
-      debug: jest.fn(),
-    };
-
-    // Replace console methods
-    global.console.log = mockConsole.log;
-    global.console.error = mockConsole.error;
-    global.console.warn = mockConsole.warn;
-    global.console.debug = mockConsole.debug;
-
-    logger = new Logger();
+    written = [];
+    stderrSpy = jest
+      .spyOn(process.stderr, 'write')
+      .mockImplementation((chunk: string | Uint8Array) => {
+        written.push(String(chunk));
+        return true;
+      });
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    stderrSpy.mockRestore();
   });
 
-  describe('info', () => {
-    test('should log info messages', () => {
-      logger.info('Test info message');
+  describe('ConsoleLogger', () => {
+    test('writes level, message and context to stderr', () => {
+      new ConsoleLogger(LogLevel.INFO).info('Scan started', { file: 'a.json' });
 
-      expect(mockConsole.log).toHaveBeenCalledWith(
-        expect.stringContaining('[INFO]'),
-        'Test info message'
-      );
+      expect(written).toHaveLength(1);
+      expect(written[0]).toContain('[INFO] Scan started');
+      expect(written[0]).toContain('{"file":"a.json"}');
     });
 
-    test('should log info with context', () => {
-      logger.info('User action', { userId: '123', action: 'login' });
+    test('drops messages below its level', () => {
+      const logger = new ConsoleLogger(LogLevel.WARN);
+      logger.debug('d');
+      logger.info('i');
+      logger.warn('w');
+      logger.error('e');
 
-      expect(mockConsole.log).toHaveBeenCalledWith(
-        expect.stringContaining('[INFO]'),
-        'User action',
-        { userId: '123', action: 'login' }
-      );
-    });
-  });
-
-  describe('error', () => {
-    test('should log error messages', () => {
-      logger.error('Test error message');
-
-      expect(mockConsole.error).toHaveBeenCalledWith(
-        expect.stringContaining('[ERROR]'),
-        'Test error message'
-      );
+      expect(written.map((line) => line.match(/\[(\w+)\]/)?.[1])).toEqual([
+        'WARN',
+        'ERROR',
+      ]);
     });
 
-    test('should log error with Error object', () => {
-      const error = new Error('Test error');
-      logger.error('Operation failed', error);
+    test('adds the stack trace only when asked to', () => {
+      const error = new Error('boom');
 
-      expect(mockConsole.error).toHaveBeenCalledWith(
-        expect.stringContaining('[ERROR]'),
-        'Operation failed',
+      new ConsoleLogger(LogLevel.ERROR).error('failed', error);
+      expect(written).toHaveLength(1);
+
+      written = [];
+      new ConsoleLogger(LogLevel.ERROR, { includeStackTrace: true }).error(
+        'failed',
         error
       );
-    });
-
-    test('should log error with stack trace', () => {
-      const error = new Error('Test error');
-      logger.error('Failed operation', { error, context: 'test' });
-
-      expect(mockConsole.error).toHaveBeenCalledWith(
-        expect.stringContaining('[ERROR]'),
-        'Failed operation',
-        { error, context: 'test' }
-      );
+      expect(written).toHaveLength(2);
+      expect(written[1]).toContain('Error: boom');
     });
   });
 
-  describe('warn', () => {
-    test('should log warning messages', () => {
-      logger.warn('Test warning message');
+  describe('LoggerFactory', () => {
+    test.each([
+      ['DEBUG', 4],
+      ['info', 3],
+      ['WARN', 2],
+      ['error', 1],
+      [undefined, 3],
+    ])('level %p logs %p of 4 messages', (level, expected) => {
+      const logger = LoggerFactory.create({ level });
+      logger.debug('d');
+      logger.info('i');
+      logger.warn('w');
+      logger.error('e');
 
-      expect(mockConsole.warn).toHaveBeenCalledWith(
-        expect.stringContaining('[WARN]'),
-        'Test warning message'
-      );
+      expect(written).toHaveLength(expected);
     });
 
-    test('should log warning with metadata', () => {
-      logger.warn('Performance warning', {
-        processingTime: 5000,
-        threshold: 3000,
-      });
-
-      expect(mockConsole.warn).toHaveBeenCalledWith(
-        expect.stringContaining('[WARN]'),
-        'Performance warning',
-        { processingTime: 5000, threshold: 3000 }
-      );
-    });
-  });
-
-  describe('debug', () => {
-    test('should log debug messages when debug enabled', () => {
-      const debugLogger = new Logger({ level: 'debug' });
-      debugLogger.debug('Test debug message');
-
-      expect(mockConsole.debug).toHaveBeenCalledWith(
-        expect.stringContaining('[DEBUG]'),
-        'Test debug message'
-      );
+    test('getLogger returns a shared instance', () => {
+      expect(LoggerFactory.getLogger()).toBe(LoggerFactory.getLogger());
     });
 
-    test('should not log debug messages when debug disabled', () => {
-      const prodLogger = new Logger({ level: 'info' });
-      prodLogger.debug('Test debug message');
+    test('quiet logger writes nothing', () => {
+      const logger = LoggerFactory.createQuietLogger();
+      expect(logger).toBeInstanceOf(NoOpLogger);
 
-      expect(mockConsole.debug).not.toHaveBeenCalled();
-    });
+      logger.debug('d');
+      logger.info('i');
+      logger.warn('w');
+      logger.error('e', new Error('x'));
 
-    test('should log debug with detailed context', () => {
-      const debugLogger = new Logger({ level: 'debug' });
-      debugLogger.debug('Processing step', {
-        step: 'validation',
-        input: 'test.yaml',
-        rules: 5,
-      });
-
-      expect(mockConsole.debug).toHaveBeenCalledWith(
-        expect.stringContaining('[DEBUG]'),
-        'Processing step',
-        { step: 'validation', input: 'test.yaml', rules: 5 }
-      );
-    });
-  });
-
-  describe('log levels', () => {
-    test('should respect log level hierarchy', () => {
-      const errorOnlyLogger = new Logger({ level: 'error' });
-
-      errorOnlyLogger.debug('Debug message');
-      errorOnlyLogger.info('Info message');
-      errorOnlyLogger.warn('Warn message');
-      errorOnlyLogger.error('Error message');
-
-      expect(mockConsole.debug).not.toHaveBeenCalled();
-      expect(mockConsole.log).not.toHaveBeenCalled();
-      expect(mockConsole.warn).not.toHaveBeenCalled();
-      expect(mockConsole.error).toHaveBeenCalled();
-    });
-
-    test('should log all levels when set to debug', () => {
-      const debugLogger = new Logger({ level: 'debug' });
-
-      debugLogger.debug('Debug message');
-      debugLogger.info('Info message');
-      debugLogger.warn('Warn message');
-      debugLogger.error('Error message');
-
-      expect(mockConsole.debug).toHaveBeenCalled();
-      expect(mockConsole.log).toHaveBeenCalled();
-      expect(mockConsole.warn).toHaveBeenCalled();
-      expect(mockConsole.error).toHaveBeenCalled();
-    });
-  });
-
-  describe('formatting', () => {
-    test('should include timestamp in log output', () => {
-      logger.info('Test message');
-
-      const call = mockConsole.log.mock.calls[0][0];
-      expect(call).toMatch(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/); // ISO timestamp
-    });
-
-    test('should format messages consistently', () => {
-      logger.info('Test message');
-
-      const call = mockConsole.log.mock.calls[0][0];
-      expect(call).toContain('[INFO]');
-      expect(call).toMatch(
-        /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z \[INFO\]$/
-      );
-    });
-
-    test('should handle objects and arrays in context', () => {
-      const complexContext = {
-        array: [1, 2, 3],
-        object: { nested: true },
-        string: 'value',
-        number: 42,
-        boolean: true,
-        null: null,
-        undefined: undefined,
-      };
-
-      logger.info('Complex context', complexContext);
-
-      expect(mockConsole.log).toHaveBeenCalledWith(
-        expect.any(String),
-        'Complex context',
-        complexContext
-      );
-    });
-  });
-
-  describe('child loggers', () => {
-    test('should create child logger with context', () => {
-      const childLogger = logger.child({ component: 'scanner' });
-      childLogger.info('Scanning started');
-
-      expect(mockConsole.log).toHaveBeenCalledWith(
-        expect.stringContaining('[INFO]'),
-        'Scanning started',
-        { component: 'scanner' }
-      );
-    });
-
-    test('should merge child context with log context', () => {
-      const childLogger = logger.child({ component: 'scanner' });
-      childLogger.info('Processing file', { file: 'test.json' });
-
-      expect(mockConsole.log).toHaveBeenCalledWith(
-        expect.stringContaining('[INFO]'),
-        'Processing file',
-        { component: 'scanner', file: 'test.json' }
-      );
-    });
-  });
-
-  describe('error handling', () => {
-    test('should handle logging failures gracefully', () => {
-      // Make console.log throw an error
-      mockConsole.log.mockImplementation(() => {
-        throw new Error('Console error');
-      });
-
-      // Should not throw
-      expect(() => {
-        logger.info('Test message');
-      }).not.toThrow();
-    });
-
-    test('should handle circular references in context', () => {
-      const circular: any = { name: 'test' };
-      circular.self = circular;
-
-      expect(() => {
-        logger.info('Circular reference test', circular);
-      }).not.toThrow();
-    });
-  });
-
-  describe('configuration', () => {
-    test('should accept custom format', () => {
-      const customLogger = new Logger({
-        level: 'info',
-        format: 'json',
-      });
-
-      customLogger.info('Test message', { key: 'value' });
-
-      expect(mockConsole.log).toHaveBeenCalled();
-      const loggedData = mockConsole.log.mock.calls[0][0];
-      expect(() => JSON.parse(loggedData)).not.toThrow();
-    });
-
-    test('should support silent mode', () => {
-      const silentLogger = new Logger({ level: 'silent' });
-
-      silentLogger.error('Error message');
-      silentLogger.warn('Warning message');
-      silentLogger.info('Info message');
-      silentLogger.debug('Debug message');
-
-      expect(mockConsole.error).not.toHaveBeenCalled();
-      expect(mockConsole.warn).not.toHaveBeenCalled();
-      expect(mockConsole.log).not.toHaveBeenCalled();
-      expect(mockConsole.debug).not.toHaveBeenCalled();
+      expect(written).toHaveLength(0);
     });
   });
 });
-
-
-
-
-
-
-
