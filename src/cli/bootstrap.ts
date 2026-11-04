@@ -408,8 +408,7 @@ export function setupContainer(container: Container): void {
             console.log('\nNext steps:');
             console.log('1. Edit the file to add your custom rules');
             console.log(
-              '2. Validate it: promptshield validate --rulepack ' +
-                command.filename
+              '2. Validate it: promptshield validate ' + command.filename
             );
             console.log(
               '3. Use it: promptshield scan <input> --rulepack ' +
