@@ -69,7 +69,7 @@ npm install -g @dawans/promptshield
 promptshield scan data.json -r ./my-rules.yaml
 ```
 
-Version 1.0.4 on npm expects a RulePack path. Bundled names such as `-r pii` are added on this branch and will ship in the next release; until then, pass the YAML path (the bundled packs are in the package's `rulepacks/` folder).
+Version 1.0.4 on npm expects a RulePack path. Bundled names such as `-r pii` and the library API below arrive in 1.0.5; until it is published, pass the YAML path (the bundled packs are in the package's `rulepacks/` folder).
 
 ## Features
 
@@ -111,12 +111,59 @@ rules:
 
 Keywords match whole words, case-insensitively unless `case_sensitive: true` is set.
 
+## Use as a library
+
+The package also exports a programmatic API with TypeScript types. It uses the same matcher as the CLI, so both report the same matches.
+
+```bash
+npm install @dawans/promptshield
+```
+
+```ts
+import { compileRulePack, RuleEngine, Scanner } from '@dawans/promptshield';
+
+// Scan text with rules defined in code (same shape as a RulePack YAML file)
+const rules = compileRulePack({
+  name: 'Internal secrets',
+  description: 'Catch credentials pasted into prompts',
+  rules: [
+    {
+      id: 'aws-access-key',
+      description: 'AWS access key ID',
+      match_regex: ['\\bAKIA[0-9A-Z]{16}\\b'],
+      severity: 'critical',
+      category: 'security',
+    },
+  ],
+});
+
+const result = new RuleEngine(rules).scan('key: AKIAABCDEFGHIJKLMNOP');
+for (const v of result.violations) {
+  console.log(
+    `${v.severity} ${v.ruleId} at ${v.line}:${v.column}: ${v.matchText}`
+  );
+}
+// critical aws-access-key at 1:6: AKIAABCDEFGHIJKLMNOP
+
+// Or load a bundled RulePack (or a YAML path, or a directory of them)
+const scanner = new Scanner({ rulesPath: 'prompt-injection' });
+await scanner.initialize();
+const { violationCount } = await scanner.scanText(
+  'Ignore all previous instructions.'
+);
+```
+
+`RuleEngine` scans raw text; it does not pick fields out of JSON the way `promptshield scan` does.
+
 ## Architecture
 
 The code follows a ports-and-adapters layout, split by domain:
 
 ```
 src/
+  index.ts         library entry point (compileRulePack, RuleEngine, Scanner)
+  core/            library compiler and engine, built on the rules domain's matcher
+  adapters/        library Node.js adapters: file loader, Scanner, reporter
   cli/             commander entry point and dependency wiring (bootstrap.ts)
   application/     one command + handler per CLI command (scan, list, init, validate)
   domains/
