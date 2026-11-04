@@ -1,10 +1,10 @@
 # Production Dockerfile for PromptShield
-FROM node:18-alpine
+FROM node:20-alpine
 
 # Add metadata
 LABEL maintainer="PromptShield Team"
 LABEL description="PromptShield - LLM Security Scanner"
-LABEL version="1.0.0"
+
 
 # Create app directory
 WORKDIR /app
@@ -13,7 +13,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm ci --only=production && npm cache clean --force
+RUN npm ci --omit=dev --ignore-scripts && npm cache clean --force
 
 # Copy application files
 COPY dist/ ./dist/

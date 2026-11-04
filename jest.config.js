@@ -19,7 +19,6 @@ module.exports = {
     '!src/**/*.d.ts',
     '!src/**/index.ts',
     '!src/cli/index.ts', // Entry point
-    '!src/cli/index-new-temp.ts', // Temporary file
   ],
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],
