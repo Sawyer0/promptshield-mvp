@@ -308,7 +308,7 @@ export class NodeReporter implements IReporter {
             informationUri: 'https://github.com/Sawyer0/promptshield',
           },
         },
-        results: [] as any[],
+        results: [] as SarifResult[],
       },
     ];
 
@@ -352,4 +352,22 @@ export class NodeReporter implements IReporter {
       2
     );
   }
+}
+
+/** Minimal SARIF 2.1.0 result shape emitted by exportSARIF. */
+interface SarifResult {
+  ruleId: string;
+  level: 'error' | 'warning';
+  message: { text: string };
+  locations: Array<{
+    physicalLocation: {
+      artifactLocation: { uri: string };
+      region: {
+        startLine: number;
+        startColumn: number;
+        charOffset: number;
+        charLength: number;
+      };
+    };
+  }>;
 }
