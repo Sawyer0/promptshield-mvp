@@ -1,9 +1,6 @@
 import { describe, test, expect, beforeEach } from '@jest/globals';
 import { JsonProcessor } from '../../../../../src/domains/scanning/adapters/processors/JsonProcessor';
-import {
-  createScanConfig,
-  createScanContext,
-} from '../../../../helpers/testFactories';
+import { createScanContext } from '../../../../helpers/testFactories';
 
 describe('JsonProcessor', () => {
   let processor: JsonProcessor;

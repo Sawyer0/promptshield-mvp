@@ -1,5 +1,4 @@
 import { describe, test, expect } from '@jest/globals';
-import { ScanMetrics } from '../../../../src/shared/types/ScanMetrics';
 import { createScanMetrics } from '../../../helpers/testFactories';
 
 describe('ScanMetrics', () => {

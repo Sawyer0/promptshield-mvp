@@ -6,12 +6,9 @@ import { LocalFileReader } from '../../src/domains/scanning/adapters/LocalFileRe
 import { JsonProcessor } from '../../src/domains/scanning/adapters/processors/JsonProcessor';
 import { TextProcessor } from '../../src/domains/scanning/adapters/processors/TextProcessor';
 import { DefaultRuleEngine } from '../../src/domains/rules/core/services/RuleEngineImpl';
-import { Rule } from '../../src/domains/rules/core/entities/Rule';
-import { RulePack } from '../../src/domains/rules/core/entities/RulePack';
 import { YamlRuleRepository } from '../../src/domains/rules/adapters/YamlRuleRepository';
 import { OptimizedRuleMatcher } from '../../src/domains/rules/core/services/OptimizedRuleMatcher';
 import { createScanConfig } from '../helpers/testFactories';
-import { ok } from '../../src/shared/types/Result';
 
 describe('Domain Integration', () => {
   let scanOrchestrator: DefaultScanOrchestrator;

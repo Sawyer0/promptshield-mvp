@@ -1,6 +1,5 @@
 import { describe, test, expect } from '@jest/globals';
 import { RulePack } from '../../../../../src/domains/rules/core/entities/RulePack';
-import { Rule } from '../../../../../src/domains/rules/core/entities/Rule';
 import { createRule } from '../../../../helpers/testFactories';
 
 describe('RulePack', () => {
