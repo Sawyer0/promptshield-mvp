@@ -18,10 +18,6 @@ test-coverage:
 test-integration:
 	npm run test:integration
 
-## Run performance tests
-test-performance:
-	npm run test:performance
-
 ## Run linter
 lint:
 	npm run lint
@@ -45,10 +41,6 @@ type-check:
 ## Full validation (type-check, lint, format, security)
 validate:
 	npm run validate
-
-## Output validation
-validate-output:
-	npm run validate:output
 
 ## Security audit
 security:
@@ -80,20 +72,16 @@ clean:
 
 ## Example scan using sample RulePack and fixture
 scan:
-	node dist/cli/index.js scan tests/fixtures/sample.txt --rulepack rulepacks/pii.yaml
+	node bin/promptshield scan tests/fixtures/sample.txt --rulepack rulepacks/pii.yaml
 
 ## CI/CD pipeline (runs all checks)
 ci:
-	npm run validate
-	npm run test:coverage
-	npm run security:audit
-	npm run validate:output
+	npm run ci
 
 ## Prepare for release
 release-prep:
-	npm run validate
-	npm run test:coverage
-	npm run validate:output
+	npm run ci
+	npm run security:audit
 
 ## Show help
 help:
@@ -102,14 +90,12 @@ help:
 	@echo "  test             Run all tests"
 	@echo "  test-coverage    Run tests with coverage"
 	@echo "  test-integration Run integration tests"
-	@echo "  test-performance Run performance tests"
 	@echo "  lint             Run linter"
 	@echo "  lint-fix         Fix linting issues"
 	@echo "  format           Format code"
 	@echo "  format-check     Check formatting"
 	@echo "  type-check       Type checking"
 	@echo "  validate         Full validation (type-check, lint, format, security)"
-	@echo "  validate-output  Validate CLI output formats"
 	@echo "  security         Security audit"
 	@echo "  security-fix     Fix security vulnerabilities"
 	@echo "  deps-check       Check for outdated dependencies"
