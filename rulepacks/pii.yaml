@@ -1,5 +1,6 @@
 # Copyright (c) 2025 Sawyer0
-# Licensed under proprietary terms. See LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+# Licensed under the Apache License, Version 2.0. See LICENSE for details.
 version: '1.0.0'
 last_updated: '2025-01-15'
 name: PII Rules
