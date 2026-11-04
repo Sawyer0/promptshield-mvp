@@ -49,7 +49,8 @@ export class ScanCommand {
       quiet: this.options.quiet || false,
       verbose: this.options.verbose || false,
       debug: this.options.debug || false,
-      noColor: this.options.noColor,
+      // commander maps --no-color to `color: false`
+      noColor: this.options.noColor ?? this.options.color === false,
       strict: this.options.strict || false,
       failOn: this.options.failOn,
     };
@@ -118,6 +119,7 @@ export interface ScanCommandOptions {
   verbose?: boolean;
   debug?: boolean;
   noColor?: boolean;
+  color?: boolean;
   strict?: boolean;
   failOn?: string;
 }

@@ -18,6 +18,10 @@ import {
 } from '../application/commands/validate/ValidateCommand';
 import { ValidateCommandHandler } from '../application/commands/validate/ValidateCommandHandler';
 import { LoggerFactory } from '../infrastructure/logging/Logger';
+import {
+  PACKAGE_VERSION,
+  resolveRulePackPath,
+} from '../shared/packageResources';
 
 const program = new Command();
 const container = new Container();
@@ -31,13 +35,16 @@ program
   .description(
     'AI safety scanner for LLM outputs - detect prompt injections, PII leaks, and security issues'
   )
-  .version('1.0.0');
+  .version(PACKAGE_VERSION);
 
 // --- Scan Command ---
 program
   .command('scan <input>')
   .description('Scan LLM outputs for safety violations using rulepacks')
-  .option('-r, --rulepack <path>', 'Path to RulePack YAML (required)')
+  .option(
+    '-r, --rulepack <path>',
+    'RulePack YAML path or bundled name: prompt-injection, pii, bias, hallucination (required)'
+  )
   .option(
     '-o, --output <format>',
     'Output format: json, markdown, csv, table, html, ndjson (default: markdown)'
@@ -133,7 +140,11 @@ program
         });
       }
 
-      const command = new ScanCommand(actualInput, options, isRawContent);
+      const command = new ScanCommand(
+        actualInput,
+        { ...options, rulepack: resolveRulePackPath(options.rulepack) },
+        isRawContent
+      );
 
       const commandLogger = options.quiet
         ? LoggerFactory.createQuietLogger()
@@ -168,7 +179,10 @@ program
 program
   .command('list')
   .description('List rules in a RulePack')
-  .option('-r, --rulepack <path>', 'Path to RulePack YAML (required)')
+  .option(
+    '-r, --rulepack <path>',
+    'RulePack YAML path or bundled name: prompt-injection, pii, bias, hallucination (required)'
+  )
   .option('--category <category>', 'Filter by category')
   .option('--severity <severity>', 'Filter by severity')
   .option('--enabled-only', 'Show only enabled rules')
@@ -180,7 +194,10 @@ program
       enabledOnly?: boolean;
     }) => {
       try {
-        const command = new ListCommand(options);
+        const command = new ListCommand({
+          ...options,
+          rulepack: resolveRulePackPath(options.rulepack),
+        });
         const handler =
           container.resolve<ListCommandHandler>('listCommandHandler');
 

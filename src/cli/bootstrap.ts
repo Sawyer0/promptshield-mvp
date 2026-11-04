@@ -47,7 +47,7 @@ export function setupContainer(container: Container): void {
   container.register(
     'logger',
     LoggerFactory.create({
-      level: process.env.LOG_LEVEL || 'INFO',
+      level: process.env.LOG_LEVEL || 'WARN',
       options: {
         includeTimestamp: true,
         includeStackTrace: process.env.NODE_ENV === 'development',

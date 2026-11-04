@@ -9,7 +9,7 @@ export class RulePack {
     public readonly name: string,
     public readonly description: string,
     public readonly rules: Rule[],
-    public readonly version: string = '1.0.4',
+    public readonly version: string = '1.0.0',
     public readonly lastUpdated: Date = new Date()
   ) {
     this.validate();
