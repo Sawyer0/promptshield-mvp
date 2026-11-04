@@ -4,6 +4,8 @@ import { ScanMetrics } from '../../../../shared/types/ScanMetrics';
 /**
  * Represents the result of a scan operation
  */
+const SEVERITY_RANK = ['low', 'medium', 'high', 'critical'];
+
 export class ScanResult {
   constructor(
     public readonly violations: Violation[],
@@ -34,9 +36,17 @@ export class ScanResult {
     return counts;
   }
 
+  /**
+   * True when any violation is at or above the given severity, so
+   * --fail-on high also fails on critical findings.
+   */
   shouldFail(failOnSeverity?: string): boolean {
     if (!failOnSeverity) return false;
-    return this.violations.some((v) => v.severity === failOnSeverity);
+    const threshold = SEVERITY_RANK.indexOf(failOnSeverity);
+    if (threshold === -1) return false;
+    return this.violations.some(
+      (v) => SEVERITY_RANK.indexOf(v.severity) >= threshold
+    );
   }
 
   static empty(): ScanResult {

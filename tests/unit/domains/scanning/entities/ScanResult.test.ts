@@ -256,6 +256,16 @@ describe('ScanResult', () => {
       expect(result.shouldFail('high')).toBe(false);
     });
 
+    test('fails on findings above the threshold too', () => {
+      const result = new ScanResult(
+        [createViolation({ severity: 'critical' })],
+        createScanMetrics()
+      );
+
+      expect(result.shouldFail('high')).toBe(true);
+      expect(result.shouldFail('low')).toBe(true);
+    });
+
     test('should return false when failOnSeverity is undefined', () => {
       const violations = [createViolation({ severity: 'critical' })];
       const result = new ScanResult(violations, createScanMetrics());
