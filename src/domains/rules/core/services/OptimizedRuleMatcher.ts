@@ -77,12 +77,19 @@ export class OptimizedRuleMatcher implements RuleMatcher {
     }
 
     const positions = new PositionIndex(content);
+    // Report each span once per rule, even when several patterns hit it
+    const seenSpans = new Map<Rule, Set<string>>();
     const record = (
       rule: Rule,
       start: number,
       end: number,
       pattern: string
     ): void => {
+      const spans = seenSpans.get(rule) ?? new Set<string>();
+      seenSpans.set(rule, spans);
+      const key = `${start}:${end}`;
+      if (spans.has(key)) return;
+      spans.add(key);
       resultMap
         .get(rule)
         ?.push(buildMatch(content, positions, start, end, pattern));
