@@ -9,12 +9,6 @@ import { RulePack } from '../core/entities/RulePack';
  * YAML-based rule repository implementation
  */
 export class YamlRuleRepository implements RuleRepository {
-  private defaultRulepackDir: string;
-
-  constructor(defaultRulepackDir: string = 'rulepacks') {
-    this.defaultRulepackDir = defaultRulepackDir;
-  }
-
   async loadFromYaml(filePath: string): Promise<Result<RulePack, Error>> {
     try {
       if (!fs.existsSync(filePath)) {
@@ -67,17 +61,5 @@ export class YamlRuleRepository implements RuleRepository {
     } catch (error) {
       return err(new Error(`Failed to save RulePack to YAML: ${error}`));
     }
-  }
-
-  // Users must provide their own rulepack path - no discovery or defaults
-
-  async validateYamlFile(filePath: string): Promise<Result<void, Error>> {
-    const loadResult = await this.loadFromYaml(filePath);
-
-    if (loadResult.isErr()) {
-      return err(loadResult.error);
-    }
-
-    return ok(undefined);
   }
 }

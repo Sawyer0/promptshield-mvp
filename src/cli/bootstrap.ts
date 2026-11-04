@@ -74,7 +74,7 @@ export function setupContainer(container: Container): void {
   // Rule engine
   container.registerFactory(
     'ruleRepository',
-    () => new YamlRuleRepository('rulepacks'),
+    () => new YamlRuleRepository(),
     true
   );
 

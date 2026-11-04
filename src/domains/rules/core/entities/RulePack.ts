@@ -134,8 +134,4 @@ export class RulePack {
       rules: this.rules.map((rule) => rule.toYaml()),
     };
   }
-
-  static empty(): RulePack {
-    return new RulePack('Empty RulePack', 'No rules defined', []);
-  }
 }
