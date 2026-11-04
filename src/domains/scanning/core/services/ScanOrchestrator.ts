@@ -14,6 +14,8 @@ import { RuleEngine } from '../../../rules/core/ports/RuleEngine';
 import { Violation } from '../../../../shared/types/Violation';
 import { ScanMetrics } from '../../../../shared/types/ScanMetrics';
 
+const NDJSON_EXTENSION = /\.(ndjson|jsonl)$/i;
+
 /**
  * Main orchestrator for scan operations
  */
@@ -145,9 +147,19 @@ export class DefaultScanOrchestrator implements IScanOrchestrator, ScanEngine {
   }
 
   private async scanFile(
-    context: ScanContext,
+    baseContext: ScanContext,
     filePath: string
   ): Promise<Result<ScanResult, Error>> {
+    // .ndjson/.jsonl files are line-delimited even without --ndjson
+    const context =
+      NDJSON_EXTENSION.test(filePath) && !baseContext.isNdjsonMode()
+        ? new ScanContext(
+            { ...baseContext.config, ndjsonMode: true },
+            baseContext.rulePack,
+            baseContext.startTime
+          )
+        : baseContext;
+
     const contentResult = await this.fileReader.readFile(filePath);
     if (contentResult.isErr()) {
       return err(contentResult.error);
