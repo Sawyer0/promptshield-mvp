@@ -23,6 +23,15 @@
   "bugs": {
     "url": "https://x.com/Sawyer0"
   },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
   "bin": {
     "promptshield": "./bin/promptshield"
   },
