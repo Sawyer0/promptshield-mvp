@@ -17,7 +17,7 @@ export {
   RuleType,
   IFileReader,
   IReporter,
-  
+
   // Errors
   ConfigurationError,
   SchemaValidationError,
@@ -37,15 +37,8 @@ export {
 } from './core/engine.js';
 
 // Node.js adapter exports
-export {
-  NodeFileReader,
-} from './adapters/fs-loader.js';
+export { NodeFileReader } from './adapters/fs-loader.js';
 
-export {
-  Scanner,
-  ScannerOptions,
-} from './adapters/scanner.js';
+export { Scanner, ScannerOptions } from './adapters/scanner.js';
 
-export {
-  NodeReporter,
-} from './adapters/reporter.js';
+export { NodeReporter } from './adapters/reporter.js';

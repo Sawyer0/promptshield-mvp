@@ -58,12 +58,18 @@ export class DefaultRuleEngine implements RuleEngine {
       const violations: Violation[] = [];
 
       // Check if matcher supports optimized batch matching
-      if ('matchAll' in this.matcher && typeof this.matcher.matchAll === 'function') {
+      if (
+        'matchAll' in this.matcher &&
+        typeof this.matcher.matchAll === 'function'
+      ) {
         // Use optimized O(n) single-pass matching
         for (const [fieldName, fieldValue] of Object.entries(fields)) {
           if (!fieldValue) continue;
 
-          const matchResults = this.matcher.matchAll(fieldValue, rules.filter(r => r.enabled));
+          const matchResults = this.matcher.matchAll(
+            fieldValue,
+            rules.filter((r) => r.enabled)
+          );
 
           for (const [rule, matches] of matchResults) {
             for (const match of matches) {

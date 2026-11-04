@@ -25,9 +25,7 @@ export class NodeFileSystem implements IFileSystem {
       const content = await fsPromises.readFile(path, 'utf-8');
       return ok(content);
     } catch (error) {
-      return err(
-        new Error(`Failed to read file ${path}: ${error}`)
-      );
+      return err(new Error(`Failed to read file ${path}: ${error}`));
     }
   }
 
@@ -36,9 +34,7 @@ export class NodeFileSystem implements IFileSystem {
       await fsPromises.writeFile(path, content, 'utf-8');
       return ok(undefined);
     } catch (error) {
-      return err(
-        new Error(`Failed to write file ${path}: ${error}`)
-      );
+      return err(new Error(`Failed to write file ${path}: ${error}`));
     }
   }
 
@@ -47,9 +43,7 @@ export class NodeFileSystem implements IFileSystem {
       await fsPromises.mkdir(path, { recursive });
       return ok(undefined);
     } catch (error) {
-      return err(
-        new Error(`Failed to create directory ${path}: ${error}`)
-      );
+      return err(new Error(`Failed to create directory ${path}: ${error}`));
     }
   }
 }

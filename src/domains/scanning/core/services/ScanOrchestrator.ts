@@ -112,13 +112,13 @@ export class DefaultScanOrchestrator implements IScanOrchestrator, ScanEngine {
     // Process files concurrently in batches to avoid EMFILE errors
     const CONCURRENCY_LIMIT = 20;
     const files = filesResult.value;
-    
+
     for (let i = 0; i < files.length; i += CONCURRENCY_LIMIT) {
       const chunk = files.slice(i, i + CONCURRENCY_LIMIT);
-      
+
       // Process chunk in parallel
       const chunkResults = await Promise.allSettled(
-        chunk.map(filePath => this.scanFile(context, filePath))
+        chunk.map((filePath) => this.scanFile(context, filePath))
       );
 
       // Aggregate results
