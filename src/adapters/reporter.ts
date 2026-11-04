@@ -4,12 +4,8 @@
  */
 
 import chalk from 'chalk';
-import {
-  IReporter,
-  ScanResult,
-  ViolationNode,
-  Severity,
-} from '../core/types.js';
+import { IReporter, ScanResult, ViolationNode, Severity } from '../core/types';
+import { PACKAGE_VERSION } from '../shared/packageResources';
 
 /**
  * Get chalk color function for severity level
@@ -82,18 +78,6 @@ function formatViolation(violation: ViolationNode, filePath?: string): string {
     contextLines.forEach((line) => {
       lines.push(`  ${chalk.gray('│')} ${line}`);
     });
-  }
-
-  // Suggestion
-  if (violation.suggestion) {
-    lines.push(`  ${chalk.green('💡 Suggestion:')} ${violation.suggestion}`);
-  }
-
-  // Tags
-  if (violation.tags.length > 0) {
-    lines.push(
-      `  ${chalk.gray('Tags:')} ${violation.tags.map((t) => chalk.gray(`#${t}`)).join(' ')}`
-    );
   }
 
   return lines.join('\n');
@@ -237,7 +221,7 @@ export class NodeReporter implements IReporter {
    */
   private exportJSON(results: Map<string, ScanResult>): string {
     const output = {
-      version: '1.0.0',
+      version: PACKAGE_VERSION,
       timestamp: new Date().toISOString(),
       results: Array.from(results.entries()).map(([filePath, result]) => ({
         file: filePath,
@@ -245,7 +229,7 @@ export class NodeReporter implements IReporter {
         violations: result.violations.map((v) => ({
           ruleId: v.ruleId,
           ruleName: v.ruleName,
-          type: v.type,
+          category: v.category,
           severity: v.severity,
           message: v.message,
           line: v.line,
@@ -254,8 +238,6 @@ export class NodeReporter implements IReporter {
           end: v.end,
           matchText: v.matchText,
           context: v.context,
-          suggestion: v.suggestion,
-          tags: v.tags,
         })),
       })),
     };
@@ -284,10 +266,6 @@ export class NodeReporter implements IReporter {
         lines.push(`  Rule: ${v.ruleName} (${v.ruleId})`);
         lines.push(`  ${v.message}`);
 
-        if (v.suggestion) {
-          lines.push(`  Suggestion: ${v.suggestion}`);
-        }
-
         lines.push('');
       });
     }
@@ -304,8 +282,8 @@ export class NodeReporter implements IReporter {
         tool: {
           driver: {
             name: 'PromptShield',
-            version: '1.0.0',
-            informationUri: 'https://github.com/Sawyer0/promptshield',
+            version: PACKAGE_VERSION,
+            informationUri: 'https://github.com/Sawyer0/promptshield-mvp',
           },
         },
         results: [] as SarifResult[],

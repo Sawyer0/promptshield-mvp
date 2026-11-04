@@ -13,6 +13,9 @@ const PACKAGE_ROOT = path.join(__dirname, '..', '..');
  */
 export const PACKAGE_VERSION: string = readPackageVersion();
 
+/** Directory holding the RulePacks shipped with the package. */
+export const BUNDLED_RULEPACKS_DIR = path.join(PACKAGE_ROOT, 'rulepacks');
+
 /** Names of the RulePacks shipped in the package's rulepacks/ directory. */
 export const BUNDLED_RULEPACKS = [
   'prompt-injection',
@@ -34,7 +37,7 @@ export function resolveRulePackPath(
   }
   const name = value.replace(/\.ya?ml$/, '');
   if ((BUNDLED_RULEPACKS as readonly string[]).includes(name)) {
-    const bundled = path.join(PACKAGE_ROOT, 'rulepacks', `${name}.yaml`);
+    const bundled = path.join(BUNDLED_RULEPACKS_DIR, `${name}.yaml`);
     if (fs.existsSync(bundled)) {
       return bundled;
     }

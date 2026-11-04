@@ -1,44 +1,44 @@
 /**
- * PromptShield - ESLint for AI Safety
- * Main entry point for programmatic API
+ * PromptShield library API.
+ *
+ * Compile rules with compileRulePack(), scan text with RuleEngine, or scan
+ * files with Scanner. Matching is shared with the promptshield CLI.
  */
 
-// Core exports (environment-agnostic)
-export {
-  // Types
-  ViolationNode,
-  ScanResult,
-  Rule,
-  RulePack,
-  CompiledStrategy,
+export type {
+  Category,
+  CompiledRule,
   EngineConfig,
-  Severity,
-  ViolationType,
-  RuleType,
   IFileReader,
   IReporter,
-
-  // Errors
-  ConfigurationError,
-  SchemaValidationError,
-  RuleCompilationError,
-} from './core/types.js';
+  Rule,
+  RulePack,
+  ScanResult,
+  Severity,
+  ViolationNode,
+} from './core/types';
 
 export {
-  // Compiler
+  ConfigurationError,
+  RuleCompilationError,
+  SchemaValidationError,
+} from './core/types';
+
+export {
   compileRule,
   compileRulePack,
   compileRulePacks,
-} from './core/compiler.js';
+} from './core/compiler';
+
+export { RuleEngine } from './core/engine';
+
+export { NodeFileReader } from './adapters/fs-loader';
+export { NodeReporter } from './adapters/reporter';
+export { Scanner } from './adapters/scanner';
+export type { ScannerOptions } from './adapters/scanner';
 
 export {
-  // Engine
-  RuleEngine,
-} from './core/engine.js';
-
-// Node.js adapter exports
-export { NodeFileReader } from './adapters/fs-loader.js';
-
-export { Scanner, ScannerOptions } from './adapters/scanner.js';
-
-export { NodeReporter } from './adapters/reporter.js';
+  BUNDLED_RULEPACKS,
+  BUNDLED_RULEPACKS_DIR,
+  PACKAGE_VERSION,
+} from './shared/packageResources';

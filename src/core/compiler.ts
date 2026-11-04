@@ -1,211 +1,134 @@
 /**
- * Rule Compiler - Pure functions for compiling rules into optimized execution strategies
- * Environment-agnostic, no Node.js dependencies
+ * Rule compiler: validates rules and prepares them for the RuleEngine.
+ *
+ * Compiled rules are backed by the same Rule entity the CLI builds from YAML,
+ * so the library and the CLI match text identically.
  */
 
+import { Rule as MatcherRule } from '../domains/rules/core/entities/Rule';
 import {
+  Category,
+  CompiledRule,
   Rule,
-  RulePack,
-  CompiledStrategy,
-  CompiledRegexStrategy,
-  CompiledKeywordStrategy,
-  ViolationType,
   RuleCompilationError,
-} from './types.js';
+  RulePack,
+  Severity,
+} from './types';
+
+const SEVERITIES: readonly Severity[] = ['low', 'medium', 'high', 'critical'];
+const CATEGORIES: readonly Category[] = [
+  'pii',
+  'bias',
+  'hallucination',
+  'security',
+  'compliance',
+  'parse',
+  'internal',
+  'custom',
+];
+
+/** Matcher entities behind each CompiledRule handed out by this module. */
+const matcherRules = new WeakMap<CompiledRule, MatcherRule>();
 
 /**
- * Infer violation type from rule tags
- * @param tags - Array of tags from the rule
- * @returns Inferred violation type
+ * Returns the matcher entity behind a compiled rule.
+ * @internal Used by RuleEngine; not part of the public API.
  */
-function inferViolationType(tags: string[]): ViolationType {
-  const tagSet = new Set(tags.map((t) => t.toLowerCase()));
-
-  if (
-    tagSet.has('pii') ||
-    tagSet.has('email') ||
-    tagSet.has('phone') ||
-    tagSet.has('ssn')
-  ) {
-    return 'pii';
+export function getMatcherRule(compiled: CompiledRule): MatcherRule {
+  const rule = matcherRules.get(compiled);
+  if (!rule) {
+    throw new RuleCompilationError(
+      `Rule '${compiled.id}' was not created by compileRule() or compileRulePack()`,
+      compiled.id
+    );
   }
-  if (tagSet.has('bias') || tagSet.has('discrimination')) {
-    return 'bias';
-  }
-  if (tagSet.has('hallucination') || tagSet.has('factual')) {
-    return 'hallucination';
-  }
-
-  return 'other';
+  return rule;
 }
 
 /**
- * Compile a regex rule into an optimized strategy
- * @param rule - The rule to compile
- * @returns Compiled regex strategy
- * @throws RuleCompilationError if the regex pattern is invalid
+ * Validate a single enabled rule and compile it for the engine.
+ * @throws RuleCompilationError if the rule is disabled or invalid
  */
-function compileRegexRule(rule: Rule): CompiledRegexStrategy {
-  if (!rule.pattern) {
+export function compileRule(rule: Rule): CompiledRule {
+  const id = typeof rule?.id === 'string' ? rule.id : '';
+
+  if (rule?.enabled === false) {
     throw new RuleCompilationError(
-      `Rule '${rule.id}' is of type 'regex' but has no pattern`,
-      rule.id
+      `Attempted to compile disabled rule '${id}'`,
+      id
+    );
+  }
+  if (rule.severity !== undefined && !SEVERITIES.includes(rule.severity)) {
+    throw new RuleCompilationError(
+      `Rule '${id}' has invalid severity '${rule.severity}' (expected ${SEVERITIES.join(', ')})`,
+      id
+    );
+  }
+  if (rule.category !== undefined && !CATEGORIES.includes(rule.category)) {
+    throw new RuleCompilationError(
+      `Rule '${id}' has invalid category '${rule.category}' (expected ${CATEGORIES.join(', ')})`,
+      id
     );
   }
 
+  let matcherRule: MatcherRule;
   try {
-    // Compile with global flag for finding all matches
-    // Use 'u' flag for proper Unicode support
-    const regex = new RegExp(rule.pattern, 'gu');
-
-    return {
-      rule,
-      regex,
-      violationType: inferViolationType(rule.tags),
-    };
+    matcherRule = MatcherRule.fromYaml(rule);
   } catch (error) {
     throw new RuleCompilationError(
-      `Failed to compile regex pattern for rule '${rule.id}': ${error instanceof Error ? error.message : String(error)}`,
-      rule.id
+      `Invalid rule '${id}': ${error instanceof Error ? error.message : String(error)}`,
+      id
     );
   }
+
+  const compiled: CompiledRule = Object.freeze({
+    id: matcherRule.id,
+    description: matcherRule.description,
+    severity: matcherRule.severity,
+    category: matcherRule.category,
+  });
+  matcherRules.set(compiled, matcherRule);
+  return compiled;
 }
 
 /**
- * Compile a keyword rule into an optimized strategy
- * @param rule - The rule to compile
- * @returns Compiled keyword strategy
- * @throws RuleCompilationError if the keyword pattern is invalid
+ * Compile every enabled rule in a RulePack. Disabled rules are skipped.
+ * @throws RuleCompilationError listing every invalid or duplicate rule
  */
-function compileKeywordRule(rule: Rule): CompiledKeywordStrategy {
-  if (!rule.pattern) {
-    throw new RuleCompilationError(
-      `Rule '${rule.id}' is of type 'keyword' but has no pattern`,
-      rule.id
-    );
+export function compileRulePack(rulePack: RulePack): CompiledRule[] {
+  if (!rulePack || !Array.isArray(rulePack.rules)) {
+    throw new RuleCompilationError('RulePack must have a rules array');
   }
 
-  // Split pattern by commas or pipes and normalize
-  const keywords = rule.pattern
-    .split(/[,|]/)
-    .map((k) => k.trim())
-    .filter((k) => k.length > 0);
-
-  if (keywords.length === 0) {
-    throw new RuleCompilationError(
-      `Rule '${rule.id}' has no valid keywords in pattern`,
-      rule.id
-    );
-  }
-
-  return {
-    rule,
-    keywords,
-    caseSensitive: false, // Default to case-insensitive
-    violationType: inferViolationType(rule.tags),
-  };
-}
-
-/**
- * Compile a single rule into an execution strategy
- * @param rule - The rule to compile
- * @returns Compiled strategy
- * @throws RuleCompilationError if compilation fails
- */
-export function compileRule(rule: Rule): CompiledStrategy {
-  if (!rule.enabled) {
-    throw new RuleCompilationError(
-      `Attempted to compile disabled rule '${rule.id}'`,
-      rule.id
-    );
-  }
-
-  switch (rule.type) {
-    case 'regex':
-      return compileRegexRule(rule);
-
-    case 'keyword':
-      return compileKeywordRule(rule);
-
-    case 'custom':
-      // Custom rules require a validator function
-      if (!rule.validator) {
-        throw new RuleCompilationError(
-          `Rule '${rule.id}' is of type 'custom' but has no validator function`,
-          rule.id
-        );
-      }
-      // For now, treat custom rules as regex with a wildcard pattern
-      // The validator will be applied during execution
-      return {
-        rule,
-        regex: /.+/gu, // Match anything, validator will filter
-        violationType: inferViolationType(rule.tags),
-      };
-
-    default:
-      throw new RuleCompilationError(
-        `Unknown rule type '${rule.type}' for rule '${rule.id}'`,
-        rule.id
-      );
-  }
-}
-
-/**
- * Compile all enabled rules from a rulepack
- * @param rulePack - The rulepack to compile
- * @returns Array of compiled strategies
- */
-export function compileRulePack(rulePack: RulePack): CompiledStrategy[] {
-  const strategies: CompiledStrategy[] = [];
-  const errors: RuleCompilationError[] = [];
+  const compiled: CompiledRule[] = [];
+  const errors: string[] = [];
+  const seenIds = new Set<string>();
 
   for (const rule of rulePack.rules) {
-    // Skip disabled rules
-    if (!rule.enabled) {
+    if (rule?.id && seenIds.has(rule.id)) {
+      errors.push(`Duplicate rule id '${rule.id}'`);
       continue;
     }
+    if (rule?.id) seenIds.add(rule.id);
+    if (rule?.enabled === false) continue;
 
     try {
-      const strategy = compileRule(rule);
-      strategies.push(strategy);
+      compiled.push(compileRule(rule));
     } catch (error) {
-      if (error instanceof RuleCompilationError) {
-        errors.push(error);
-      } else {
-        errors.push(
-          new RuleCompilationError(
-            `Unexpected error compiling rule '${rule.id}': ${error instanceof Error ? error.message : String(error)}`,
-            rule.id
-          )
-        );
-      }
+      errors.push(error instanceof Error ? error.message : String(error));
     }
   }
 
-  // If any rules failed to compile, throw an aggregate error
   if (errors.length > 0) {
-    const errorMessages = errors.map((e) => e.message).join('\n');
     throw new RuleCompilationError(
-      `Failed to compile ${errors.length} rule(s) from rulepack '${rulePack.name}':\n${errorMessages}`
+      `Failed to compile ${errors.length} rule(s) from RulePack '${rulePack.name}':\n${errors.join('\n')}`
     );
   }
 
-  return strategies;
+  return compiled;
 }
 
-/**
- * Compile multiple rulepacks into a flat array of strategies
- * @param rulePacks - Array of rulepacks to compile
- * @returns Array of compiled strategies
- */
-export function compileRulePacks(rulePacks: RulePack[]): CompiledStrategy[] {
-  const allStrategies: CompiledStrategy[] = [];
-
-  for (const pack of rulePacks) {
-    const strategies = compileRulePack(pack);
-    allStrategies.push(...strategies);
-  }
-
-  return allStrategies;
+/** Compile several RulePacks into one list of rules. */
+export function compileRulePacks(rulePacks: RulePack[]): CompiledRule[] {
+  return rulePacks.flatMap((pack) => compileRulePack(pack));
 }
