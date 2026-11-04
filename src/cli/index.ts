@@ -73,10 +73,6 @@ program
     'Max nested object depth (default: 4)',
     parseInt
   )
-  .option(
-    '--schema <schema>',
-    'JSON schema validation: basic, extended, flexible, or file path'
-  )
 
   // Performance options
   .option('--ndjson', 'Force NDJSON mode')
@@ -85,33 +81,12 @@ program
     'Threshold for streaming mode (default: 1000)',
     parseInt
   )
-  .option('--parallel [workers]', 'Enable parallel processing')
-  .option(
-    '--batch-size <number>',
-    'Batch size for parallel (default: 10)',
-    parseInt
-  )
-  .option('--timeout <seconds>', 'Processing timeout (default: 300)', parseInt)
-  .option(
-    '--memory-warning-threshold <number>',
-    'Memory warning threshold 0-1 (default: 0.8)',
-    parseFloat
-  )
-
-  // Compression options
-  .option('--compress <type>', 'Output compression: gzip or deflate')
-  .option(
-    '--compression-level <level>',
-    'Compression level 0-9 (default: 6)',
-    parseInt
-  )
 
   // Output control
   .option('-q, --quiet', 'Suppress progress and summary')
   .option('-v, --verbose', 'Enable verbose output')
   .option('--debug', 'Enable debug mode')
   .option('--no-color', 'Disable colored output')
-  .option('--strict', 'Treat warnings as errors')
   .option(
     '--fail-on <severity>',
     'Exit with code 1 if any violation is at or above this severity: low, medium, high, critical'

@@ -37,18 +37,6 @@ export class ScanContext {
     return this.config.streamingThreshold || 1000;
   }
 
-  isParallelProcessing(): boolean {
-    return this.config.parallel !== false;
-  }
-
-  getBatchSize(): number {
-    return this.config.batchSize || 10;
-  }
-
-  getTimeout(): number {
-    return this.config.timeout || 300;
-  }
-
   getElapsedTime(): number {
     return Date.now() - this.startTime.getTime();
   }

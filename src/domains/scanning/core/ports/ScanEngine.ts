@@ -19,10 +19,6 @@ export interface ScanEngine {
  */
 export interface ScanStrategy {
   shouldUseStreaming(contentSize: number, threshold: number): boolean;
-
-  shouldUseParallelProcessing(itemCount: number, context: ScanContext): boolean;
-
-  getOptimalBatchSize(itemCount: number, context: ScanContext): number;
 }
 
 export interface ScanOrchestrator {

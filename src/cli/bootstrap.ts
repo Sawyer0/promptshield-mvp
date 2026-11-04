@@ -1,5 +1,4 @@
 import { Container } from '../infrastructure/container/Container';
-import { ConfigManager } from '../infrastructure/config/ConfigManager';
 import { LoggerFactory } from '../infrastructure/logging/Logger';
 import { err } from '../shared/types/Result';
 
@@ -43,7 +42,6 @@ import {
  */
 export function setupContainer(container: Container): void {
   // Infrastructure
-  container.register('configManager', ConfigManager.getInstance());
   container.register(
     'logger',
     LoggerFactory.create({
@@ -58,9 +56,6 @@ export function setupContainer(container: Container): void {
   // Platform adapters (Node.js implementations)
   container.register('fileSystem', new NodeFileSystem());
   container.register('pathUtils', new NodePathUtils());
-
-  const configManager = container.resolve<ConfigManager>('configManager');
-  configManager.loadFromEnvironment();
 
   // File system
   container.register('fileReader', new LocalFileReader());
@@ -100,14 +95,6 @@ export function setupContainer(container: Container): void {
     () => ({
       shouldUseStreaming: (size: number, threshold: number) =>
         size > threshold * 1024 * 1024,
-      shouldUseParallelProcessing: (
-        count: number,
-        context: { config: { parallel?: boolean }; getBatchSize: () => number }
-      ) => context.config.parallel && count > context.getBatchSize(),
-      getOptimalBatchSize: (
-        count: number,
-        context: { getBatchSize: () => number }
-      ) => Math.min(context.getBatchSize(), Math.ceil(count / 4)),
     }),
     true
   );

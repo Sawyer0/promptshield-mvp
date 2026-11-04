@@ -15,12 +15,10 @@ export interface ScanMetrics {
   // File metrics
   fileSize?: number; // bytes
   fileType?: string;
-  compressionRatio?: number; // if compression was used
 
   // Streaming metrics
   streamingUsed: boolean;
   batchesProcessed?: number;
-  parallelWorkers?: number;
 
   metadata?: {
     startTime: Date;
@@ -86,10 +84,6 @@ export const ScanMetricsUtils = {
       items.push(
         `${this.formatProcessingTime(metrics.averageTimePerObject)} avg per object`
       );
-    }
-
-    if (metrics.parallelWorkers && metrics.parallelWorkers > 1) {
-      items.push(`${metrics.parallelWorkers} parallel workers`);
     }
 
     return items.join(', ');

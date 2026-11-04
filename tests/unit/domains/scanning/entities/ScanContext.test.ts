@@ -180,85 +180,6 @@ describe('ScanContext', () => {
     });
   });
 
-  describe('isParallelProcessing', () => {
-    test('should return true when parallel is true', () => {
-      const config = createScanConfig({ parallel: true });
-      const context = new ScanContext(config, createRulePack());
-
-      expect(context.isParallelProcessing()).toBe(true);
-    });
-
-    test('should return true when parallel is a number', () => {
-      const config = createScanConfig({ parallel: 4 });
-      const context = new ScanContext(config, createRulePack());
-
-      expect(context.isParallelProcessing()).toBe(true);
-    });
-
-    test('should return false when parallel is false', () => {
-      const config = createScanConfig({ parallel: false });
-      const context = new ScanContext(config, createRulePack());
-
-      expect(context.isParallelProcessing()).toBe(false);
-    });
-
-    test('should return true when parallel is undefined (default)', () => {
-      const config = createScanConfig();
-      delete (config as any).parallel;
-      const context = new ScanContext(config, createRulePack());
-
-      expect(context.isParallelProcessing()).toBe(true);
-    });
-  });
-
-  describe('getBatchSize', () => {
-    test('should return configured batch size', () => {
-      const config = createScanConfig({ batchSize: 25 });
-      const context = new ScanContext(config, createRulePack());
-
-      expect(context.getBatchSize()).toBe(25);
-    });
-
-    test('should return default batch size when not specified', () => {
-      const config = createScanConfig({ batchSize: 0 });
-      const context = new ScanContext(config, createRulePack());
-
-      expect(context.getBatchSize()).toBe(10);
-    });
-
-    test('should handle undefined batch size', () => {
-      const config = createScanConfig();
-      delete (config as any).batchSize;
-      const context = new ScanContext(config, createRulePack());
-
-      expect(context.getBatchSize()).toBe(10);
-    });
-  });
-
-  describe('getTimeout', () => {
-    test('should return configured timeout', () => {
-      const config = createScanConfig({ timeout: 600 });
-      const context = new ScanContext(config, createRulePack());
-
-      expect(context.getTimeout()).toBe(600);
-    });
-
-    test('should return default timeout when not specified', () => {
-      const config = createScanConfig({ timeout: 0 });
-      const context = new ScanContext(config, createRulePack());
-
-      expect(context.getTimeout()).toBe(300);
-    });
-
-    test('should handle undefined timeout', () => {
-      const config = createScanConfig();
-      delete (config as any).timeout;
-      const context = new ScanContext(config, createRulePack());
-
-      expect(context.getTimeout()).toBe(300);
-    });
-  });
-
   describe('getElapsedTime', () => {
     test('should return elapsed time since start', async () => {
       const startTime = new Date();
@@ -330,30 +251,20 @@ describe('ScanContext', () => {
       const config = createScanConfig({
         ndjsonMode: true,
         streamingThreshold: 500,
-        parallel: true,
-        batchSize: 20,
       });
       const context = new ScanContext(config, createRulePack());
 
       expect(context.isNdjsonMode()).toBe(true);
       expect(context.getStreamingThreshold()).toBe(500);
-      expect(context.isParallelProcessing()).toBe(true);
-      expect(context.getBatchSize()).toBe(20);
     });
 
     test('should work with performance optimization settings', () => {
       const config = createScanConfig({
-        parallel: 8,
-        batchSize: 50,
-        timeout: 900,
         maxObjects: 10000,
         maxDepth: 6,
       });
       const context = new ScanContext(config, createRulePack());
 
-      expect(context.isParallelProcessing()).toBe(true);
-      expect(context.getBatchSize()).toBe(50);
-      expect(context.getTimeout()).toBe(900);
       expect(context.getMaxObjects()).toBe(10000);
       expect(context.getMaxDepth()).toBe(6);
     });
@@ -387,8 +298,6 @@ describe('ScanContext', () => {
       expect(context.shouldScanEntireObject()).toBe(false);
       expect(context.getMaxDepth()).toBe(4);
       expect(context.getStreamingThreshold()).toBe(1000);
-      expect(context.getBatchSize()).toBe(10);
-      expect(context.getTimeout()).toBe(300);
     });
   });
 });

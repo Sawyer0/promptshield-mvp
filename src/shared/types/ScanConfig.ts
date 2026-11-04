@@ -19,26 +19,16 @@ export interface ScanConfig {
   scanEntireObject: boolean;
   maxObjects?: number;
   maxDepth: number;
-  schema?: string;
 
   // Performance options
   ndjsonMode: boolean;
   streamingThreshold: number;
-  parallel: boolean | number;
-  batchSize: number;
-  timeout: number;
-  memoryWarningThreshold: number;
-
-  // Compression options
-  compress?: 'gzip' | 'deflate';
-  compressionLevel?: number;
 
   // Output control
   quiet: boolean;
   verbose: boolean;
   debug: boolean;
   noColor?: boolean;
-  strict: boolean;
   failOn?: string;
 }
 
@@ -60,12 +50,7 @@ export const defaultScanConfig: ScanConfig = {
   maxDepth: 4,
   ndjsonMode: false,
   streamingThreshold: 1000,
-  parallel: false,
-  batchSize: 10,
-  timeout: 300,
-  memoryWarningThreshold: 0.8,
   quiet: false,
   verbose: false,
   debug: false,
-  strict: false,
 };

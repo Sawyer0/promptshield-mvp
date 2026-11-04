@@ -10,7 +10,6 @@ describe('ScanConfig', () => {
       expect(config.outputFormat).toBe('json');
       expect(config.maxViolations).toBe(100);
       expect(config.fields).toEqual(['prompt', 'response']);
-      expect(config.parallel).toBe(false);
       expect(config.quiet).toBe(false);
     });
 
@@ -20,7 +19,6 @@ describe('ScanConfig', () => {
         outputFormat: 'markdown',
         severity: ['critical', 'high'],
         maxViolations: 50,
-        parallel: true,
         verbose: true,
       });
 
@@ -28,7 +26,6 @@ describe('ScanConfig', () => {
       expect(config.outputFormat).toBe('markdown');
       expect(config.severity).toEqual(['critical', 'high']);
       expect(config.maxViolations).toBe(50);
-      expect(config.parallel).toBe(true);
       expect(config.verbose).toBe(true);
     });
   });
@@ -117,24 +114,9 @@ describe('ScanConfig', () => {
       expect(config.maxDepth).toBe(6);
       expect(config.maxViolations).toBe(200);
     });
-
-    test('should configure timeout', () => {
-      const config = createScanConfig({ timeout: 600 });
-      expect(config.timeout).toBe(600);
-    });
   });
 
   describe('performance settings', () => {
-    test('should configure parallel processing', () => {
-      const config = createScanConfig({
-        parallel: true,
-        batchSize: 20,
-      });
-
-      expect(config.parallel).toBe(true);
-      expect(config.batchSize).toBe(20);
-    });
-
     test('should configure streaming', () => {
       const config = createScanConfig({
         streamingThreshold: 2000,
@@ -144,27 +126,15 @@ describe('ScanConfig', () => {
       expect(config.streamingThreshold).toBe(2000);
       expect(config.ndjsonMode).toBe(true);
     });
-
-    test('should configure memory settings', () => {
-      const config = createScanConfig({
-        memoryWarningThreshold: 0.9,
-      });
-
-      expect(config.memoryWarningThreshold).toBe(0.9);
-    });
   });
 
   describe('output configuration', () => {
-    test('should configure output file and compression', () => {
+    test('should configure output file', () => {
       const config = createScanConfig({
         outputFile: 'scan-results.json',
-        compress: 'gzip',
-        compressionLevel: 9,
       });
 
       expect(config.outputFile).toBe('scan-results.json');
-      expect(config.compress).toBe('gzip');
-      expect(config.compressionLevel).toBe(9);
     });
 
     test('should handle undefined output file', () => {
@@ -186,14 +156,12 @@ describe('ScanConfig', () => {
       expect(config.debug).toBe(true);
     });
 
-    test('should configure strict mode and failure conditions', () => {
+    test('should configure failure conditions', () => {
       const config = createScanConfig({
-        strict: true,
         failOn: 'high',
         noColor: true,
       });
 
-      expect(config.strict).toBe(true);
       expect(config.failOn).toBe('high');
       expect(config.noColor).toBe(true);
     });
@@ -216,21 +184,11 @@ describe('ScanConfig', () => {
       const config = createScanConfig({
         maxObjects: 0,
         maxDepth: -1,
-        compressionLevel: 15,
       });
 
       // Values should be within expected ranges
       expect(config.maxObjects).toBe(0);
       expect(config.maxDepth).toBe(-1);
-      expect(config.compressionLevel).toBe(15);
-    });
-
-    test('should validate memory threshold range', () => {
-      const config = createScanConfig({
-        memoryWarningThreshold: 1.5, // Invalid - should be 0.0-1.0
-      });
-
-      expect(config.memoryWarningThreshold).toBe(1.5);
     });
   });
 
@@ -239,7 +197,6 @@ describe('ScanConfig', () => {
       const config = createScanConfig({
         rulepack: 'test.yaml',
         severity: ['critical'],
-        parallel: true,
       });
 
       const json = JSON.stringify(config);
@@ -247,13 +204,11 @@ describe('ScanConfig', () => {
 
       expect(parsed.rulepack).toBe('test.yaml');
       expect(parsed.severity).toEqual(['critical']);
-      expect(parsed.parallel).toBe(true);
     });
 
     test('should handle undefined values in serialization', () => {
       const config = createScanConfig({
         outputFile: undefined,
-        compress: undefined,
         failOn: undefined,
       });
 
@@ -261,7 +216,6 @@ describe('ScanConfig', () => {
       const parsed = JSON.parse(json);
 
       expect(parsed.outputFile).toBeUndefined();
-      expect(parsed.compress).toBeUndefined();
       expect(parsed.failOn).toBeUndefined();
     });
   });
@@ -277,7 +231,7 @@ describe('ScanConfig', () => {
       const overrideConfig = {
         outputFormat: 'markdown' as const,
         quiet: true,
-        parallel: true,
+        verbose: true,
       };
 
       const mergedConfig = { ...baseConfig, ...overrideConfig };
@@ -285,7 +239,7 @@ describe('ScanConfig', () => {
       expect(mergedConfig.rulepack).toBe('base.yaml'); // From base
       expect(mergedConfig.outputFormat).toBe('markdown'); // Overridden
       expect(mergedConfig.quiet).toBe(true); // Overridden
-      expect(mergedConfig.parallel).toBe(true); // New
+      expect(mergedConfig.verbose).toBe(true); // Overridden
     });
 
     test('should support partial config updates', () => {

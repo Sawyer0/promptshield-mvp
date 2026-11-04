@@ -45,8 +45,6 @@ describe('ScanRequest', () => {
         category: ['security', 'pii'],
         maxViolations: 50,
         fields: ['prompt', 'response', 'metadata'],
-        parallel: true,
-        batchSize: 20,
       });
 
       const request = new ScanRequest('input', complexConfig);
@@ -156,17 +154,13 @@ describe('ScanRequest', () => {
       const request = new ScanRequest(
         'input',
         createScanConfig({
-          parallel: true,
-          batchSize: 20,
-          timeout: 600,
-          memoryWarningThreshold: 0.9,
+          ndjsonMode: true,
+          streamingThreshold: 2000,
         })
       );
 
-      expect(request.config.parallel).toBe(true);
-      expect(request.config.batchSize).toBe(20);
-      expect(request.config.timeout).toBe(600);
-      expect(request.config.memoryWarningThreshold).toBe(0.9);
+      expect(request.config.ndjsonMode).toBe(true);
+      expect(request.config.streamingThreshold).toBe(2000);
     });
   });
 });
