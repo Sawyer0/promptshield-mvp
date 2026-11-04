@@ -71,8 +71,6 @@ coverage/
 Makefile
 scripts/
 
-# Archive and old code
-archive/
 
 # Internal documentation
 docs/API_REFERENCE.md

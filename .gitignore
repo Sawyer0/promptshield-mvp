@@ -144,3 +144,6 @@ vibecode/
 .cursor/
 # Ignore the .vscode directory
 .vscode/
+
+# Local AI assistant settings
+.claude/
