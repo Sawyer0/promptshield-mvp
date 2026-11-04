@@ -65,7 +65,10 @@ program
   .option('--limit <number>', 'Pagination limit', parseInt)
 
   // Processing options
-  .option('--fields <fields>', 'Fields to scan (default: prompt,response)')
+  .option(
+    '--fields <fields>',
+    'Fields to scan (default: prompt,response,content)'
+  )
   .option('--scan-entire-object', 'Also scan entire object as string')
   .option('--max-objects <number>', 'Maximum objects to process', parseInt)
   .option(
