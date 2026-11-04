@@ -1,1 +1,0 @@
-export { executeValidateCommand } from './runner';

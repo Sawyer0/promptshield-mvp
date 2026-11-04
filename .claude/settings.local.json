@@ -1,6 +1,0 @@
-{
-  "permissions": {
-    "allow": ["Bash(npx jest:*)"],
-    "deny": []
-  }
-}
