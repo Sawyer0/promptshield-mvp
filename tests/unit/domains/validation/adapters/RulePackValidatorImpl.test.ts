@@ -1,6 +1,7 @@
 import { describe, test, expect, beforeEach } from '@jest/globals';
 import { RulePackValidatorImpl } from '../../../../../src/domains/validation/adapters/validators/RulePackValidatorImpl';
 import { ValidationOptions } from '../../../../../src/domains/validation/core/entities/ValidationOptions';
+import { RuleYamlData } from '../../../../../src/shared/types/YamlData';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -282,7 +283,7 @@ rules:
 
   describe('validateRuleSchema', () => {
     test('should validate valid rule schema', async () => {
-      const validRule = {
+      const validRule: RuleYamlData = {
         id: 'test-rule',
         description: 'Test rule',
         severity: 'medium',
@@ -307,7 +308,9 @@ rules:
         // Missing required fields
       };
 
-      const result = await validator.validateRuleSchema(invalidRule);
+      const result = await validator.validateRuleSchema(
+        invalidRule as unknown as RuleYamlData
+      );
 
       expect(result.isErr()).toBe(true);
       if (result.isErr()) {
@@ -329,7 +332,9 @@ rules:
         },
       ];
 
-      const result = await validator.validateRegexPatterns(rules);
+      const result = await validator.validateRegexPatterns(
+        rules as unknown as RuleYamlData[]
+      );
 
       expect(result.isOk()).toBe(true);
       if (result.isOk()) {
@@ -345,7 +350,9 @@ rules:
         },
       ];
 
-      const result = await validator.validateRegexPatterns(rules);
+      const result = await validator.validateRegexPatterns(
+        rules as unknown as RuleYamlData[]
+      );
 
       expect(result.isOk()).toBe(true);
       if (result.isOk()) {

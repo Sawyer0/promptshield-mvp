@@ -91,22 +91,13 @@ describe('JsonRenderer', () => {
   });
 
   describe('error handling', () => {
-    test('should handle serialization errors gracefully', async () => {
+    test('should return an error result when rendering throws', async () => {
       const scanResult = new ScanResult([], createScanMetrics());
       const report = new Report(scanResult, 'json' as OutputFormat);
 
-      // Create a violation with a circular reference in the context
-      const circularViolation = createViolation();
-      circularViolation.context = {
-        before: '',
-        match: 'test',
-        after: '',
-      };
-      (circularViolation.context as any).circular = circularViolation.context;
-
-      jest
-        .spyOn(report, 'getFilteredViolations')
-        .mockReturnValue([circularViolation]);
+      jest.spyOn(report, 'getFilteredViolations').mockImplementation(() => {
+        throw new Error('boom');
+      });
 
       const result = await renderer.render(report);
 

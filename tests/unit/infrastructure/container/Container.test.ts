@@ -36,7 +36,7 @@ describe('Container', () => {
       container.register('service', service);
 
       const resolved = container.resolve<TestService>('service');
-      expect(resolved.value).toBe('service-value');
+      expect(resolved.getValue()).toBe('service-value');
     });
 
     test('should throw when resolving unregistered dependency', () => {
