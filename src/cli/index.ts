@@ -114,7 +114,7 @@ program
   .option('--strict', 'Treat warnings as errors')
   .option(
     '--fail-on <severity>',
-    'Exit with error on severity: low,medium,high,critical'
+    'Exit with code 1 if any violation is at or above this severity: low, medium, high, critical'
   )
   .action(async (input: string, options: ScanCommandOptions) => {
     try {
