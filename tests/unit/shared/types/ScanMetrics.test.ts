@@ -134,7 +134,10 @@ describe('ScanMetrics', () => {
       };
 
       expect(throughput.objectsPerSecond).toBe(500);
-      expect(throughput.memoryPerObject).toBeCloseTo((64 * 1024 * 1024) / 2000, 1); // ~33KB per object
+      expect(throughput.memoryPerObject).toBeCloseTo(
+        (64 * 1024 * 1024) / 2000,
+        1
+      ); // ~33KB per object
       expect(throughput.processingTimePerObject).toBe(2); // 2ms per object
     });
 
@@ -301,10 +304,3 @@ describe('ScanMetrics', () => {
     });
   });
 });
-
-
-
-
-
-
-

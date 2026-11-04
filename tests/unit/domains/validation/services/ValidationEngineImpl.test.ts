@@ -27,7 +27,9 @@ describe('DefaultValidationEngine', () => {
       extname: jest.fn<any>().mockReturnValue(''),
       basename: jest.fn<any>().mockReturnValue(''),
       dirname: jest.fn<any>().mockReturnValue(''),
-      join: jest.fn<any>().mockImplementation((...args: any[]) => args.join('/')),
+      join: jest
+        .fn<any>()
+        .mockImplementation((...args: any[]) => args.join('/')),
     } as any;
 
     inputFileValidator = new InputFileValidatorImpl();
@@ -168,7 +170,9 @@ describe('DefaultValidationEngine', () => {
 
       // Mock file system
       mockFileSystem.existsSync.mockReturnValue(true);
-      mockPathUtils.extname.mockImplementation((p: any) => p.endsWith('.json') ? '.json' : '.yaml');
+      mockPathUtils.extname.mockImplementation((p: any) =>
+        p.endsWith('.json') ? '.json' : '.yaml'
+      );
       mockPathUtils.basename.mockImplementation((p: any) => p);
 
       // Mock validators to return expected results
@@ -205,7 +209,9 @@ describe('DefaultValidationEngine', () => {
 
       // Mock file system
       mockFileSystem.existsSync.mockReturnValue(true);
-      mockPathUtils.extname.mockImplementation((p: any) => p.endsWith('.json') ? '.json' : '.yaml');
+      mockPathUtils.extname.mockImplementation((p: any) =>
+        p.endsWith('.json') ? '.json' : '.yaml'
+      );
       mockPathUtils.basename.mockImplementation((p: any) => p);
 
       // Mock first validation to succeed, second to fail

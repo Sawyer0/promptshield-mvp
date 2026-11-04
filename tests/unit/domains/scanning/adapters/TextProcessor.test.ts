@@ -75,7 +75,7 @@ describe('TextProcessor', () => {
 
   describe('processWithChunking', () => {
     test('should split large text into chunks', async () => {
-      const largeText = ('Line of text\n').repeat(1000); // Many lines to force chunking
+      const largeText = 'Line of text\n'.repeat(1000); // Many lines to force chunking
       const context = createScanContext();
 
       const result = await processor.processWithChunking(largeText, context);
@@ -88,9 +88,9 @@ describe('TextProcessor', () => {
     });
 
     test('should respect maxObjects when chunking', async () => {
-      const largeText = ('Line of text\n').repeat(1000);
+      const largeText = 'Line of text\n'.repeat(1000);
       const context = createScanContext({
-        maxObjects: 2
+        maxObjects: 2,
       });
 
       const result = await processor.processWithChunking(largeText, context);
@@ -103,8 +103,3 @@ describe('TextProcessor', () => {
     });
   });
 });
-
-
-
-
-

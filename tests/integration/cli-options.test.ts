@@ -1,4 +1,11 @@
-import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
+import {
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+  jest,
+} from '@jest/globals';
 import fs from 'fs';
 import path from 'path';
 import { ScanResult } from '../../src/domains/scanning/core/entities/ScanResult';
@@ -35,7 +42,7 @@ describe('CLI Options and Behavior', () => {
 
   beforeEach(() => {
     tempDir = fs.mkdtempSync(path.join(process.cwd(), 'test-cli-options-'));
-    
+
     mockFs = {
       existsSync: jest.fn<any>().mockReturnValue(true),
       exists: jest.fn<any>().mockResolvedValue(true),
@@ -45,10 +52,18 @@ describe('CLI Options and Behavior', () => {
     } as any;
 
     mockPath = {
-      extname: jest.fn<any>().mockImplementation((p: string) => path.extname(p)),
-      basename: jest.fn<any>().mockImplementation((p: string) => path.basename(p)),
-      dirname: jest.fn<any>().mockImplementation((p: string) => path.dirname(p)),
-      join: jest.fn<any>().mockImplementation((...args: string[]) => path.join(...args)),
+      extname: jest
+        .fn<any>()
+        .mockImplementation((p: string) => path.extname(p)),
+      basename: jest
+        .fn<any>()
+        .mockImplementation((p: string) => path.basename(p)),
+      dirname: jest
+        .fn<any>()
+        .mockImplementation((p: string) => path.dirname(p)),
+      join: jest
+        .fn<any>()
+        .mockImplementation((...args: string[]) => path.join(...args)),
     } as any;
   });
 
@@ -78,17 +93,20 @@ describe('CLI Options and Behavior', () => {
     it('should respect output file option', async () => {
       const renderers = new Map();
       renderers.set('json', new JsonRenderer());
-      
+
       const reportService = new ReportServiceImpl(renderers, mockFs, mockPath);
       const scanResult = createScanResult([]);
       const outputPath = path.join(tempDir, 'output.json');
       const report = new Report(scanResult, 'json', { outputFile: outputPath });
 
       mockFs.writeFile.mockResolvedValue(ok(undefined));
-      
+
       const result = await reportService.writeReport(report, outputPath);
       expect(result.isOk()).toBe(true);
-      expect(mockFs.writeFile).toHaveBeenCalledWith(outputPath, expect.any(String));
+      expect(mockFs.writeFile).toHaveBeenCalledWith(
+        outputPath,
+        expect.any(String)
+      );
     });
   });
 
@@ -101,7 +119,7 @@ describe('CLI Options and Behavior', () => {
         skipWarnings: false,
         maxErrors: 10,
         validateRegex: true,
-        validateSchema: true
+        validateSchema: true,
       };
 
       expect(options.strict).toBe(true);
@@ -114,7 +132,7 @@ describe('CLI Options and Behavior', () => {
         skipWarnings: false,
         maxErrors: 5,
         validateRegex: true,
-        validateSchema: true
+        validateSchema: true,
       };
 
       expect(options.maxErrors).toBe(5);

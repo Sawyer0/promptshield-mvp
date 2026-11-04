@@ -72,9 +72,11 @@ describe('Domain Integration', () => {
     expect(result.isOk()).toBe(true);
     if (result.isOk()) {
       expect(result.value.violations.length).toBeGreaterThan(0);
-      
+
       // Verify Aho-Corasick matched something (e.g. Email or Phone)
-      const piiMatch = result.value.violations.some(v => v.category === 'pii');
+      const piiMatch = result.value.violations.some(
+        (v) => v.category === 'pii'
+      );
       expect(piiMatch).toBe(true);
     }
   });
@@ -87,7 +89,7 @@ describe('Domain Integration', () => {
       inputFile,
       createScanConfig({
         rulepack: rulepackFile,
-        fields: ['prompt', 'response']
+        fields: ['prompt', 'response'],
       })
     );
 

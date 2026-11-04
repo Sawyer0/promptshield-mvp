@@ -7,7 +7,7 @@ describe('RulePack', () => {
   const sampleRule = createRule({ id: 'rule1' });
   const sampleRules = [
     createRule({ id: 'rule1', category: 'pii', severity: 'high' }),
-    createRule({ id: 'rule2', category: 'security', severity: 'critical' })
+    createRule({ id: 'rule2', category: 'security', severity: 'critical' }),
   ];
 
   describe('constructor', () => {
@@ -31,23 +31,28 @@ describe('RulePack', () => {
     });
 
     test('should throw error if name is empty', () => {
-      expect(() => new RulePack('', 'desc', [sampleRule])).toThrow('RulePack name is required');
+      expect(() => new RulePack('', 'desc', [sampleRule])).toThrow(
+        'RulePack name is required'
+      );
     });
 
     test('should throw error if description is empty', () => {
-      expect(() => new RulePack('name', '', [sampleRule])).toThrow('RulePack description is required');
+      expect(() => new RulePack('name', '', [sampleRule])).toThrow(
+        'RulePack description is required'
+      );
     });
 
     test('should throw error if rules array is empty', () => {
-      expect(() => new RulePack('name', 'desc', [])).toThrow('RulePack must have at least one rule');
+      expect(() => new RulePack('name', 'desc', [])).toThrow(
+        'RulePack must have at least one rule'
+      );
     });
 
     test('should throw error if duplicate rule IDs exist', () => {
-      const rules = [
-        createRule({ id: 'dup' }),
-        createRule({ id: 'dup' })
-      ];
-      expect(() => new RulePack('name', 'desc', rules)).toThrow('Duplicate rule ID: dup');
+      const rules = [createRule({ id: 'dup' }), createRule({ id: 'dup' })];
+      expect(() => new RulePack('name', 'desc', rules)).toThrow(
+        'Duplicate rule ID: dup'
+      );
     });
   });
 
@@ -63,7 +68,7 @@ describe('RulePack', () => {
       const rules = [
         createRule({ id: 'enabled1', enabled: true }),
         createRule({ id: 'disabled1', enabled: false }),
-        createRule({ id: 'enabled2', enabled: true })
+        createRule({ id: 'enabled2', enabled: true }),
       ];
       const rulePack = new RulePack('test', 'test', rules);
 
@@ -95,7 +100,7 @@ describe('RulePack', () => {
     const rules = [
       createRule({ id: 'r1', category: 'pii', severity: 'high' }),
       createRule({ id: 'r2', category: 'security', severity: 'critical' }),
-      createRule({ id: 'r3', category: 'pii', severity: 'low' })
+      createRule({ id: 'r3', category: 'pii', severity: 'low' }),
     ];
     const rulePack = new RulePack('test', 'test', rules);
 
@@ -110,13 +115,17 @@ describe('RulePack', () => {
     });
 
     test('getRulesByCategories', () => {
-      expect(rulePack.getRulesByCategories(['pii', 'security'])).toHaveLength(3);
+      expect(rulePack.getRulesByCategories(['pii', 'security'])).toHaveLength(
+        3
+      );
       expect(rulePack.getRulesByCategories(['security'])).toHaveLength(1);
       expect(rulePack.getRulesByCategories([])).toHaveLength(3);
     });
 
     test('getRulesBySeverities', () => {
-      expect(rulePack.getRulesBySeverities(['critical', 'high'])).toHaveLength(2);
+      expect(rulePack.getRulesBySeverities(['critical', 'high'])).toHaveLength(
+        2
+      );
       expect(rulePack.getRulesBySeverities([])).toHaveLength(3);
     });
   });
@@ -125,7 +134,7 @@ describe('RulePack', () => {
     const rules = [
       createRule({ id: 'r1', category: 'pii', severity: 'high' }),
       createRule({ id: 'r2', category: 'security', severity: 'critical' }),
-      createRule({ id: 'r3', category: 'pii', severity: 'low' })
+      createRule({ id: 'r3', category: 'pii', severity: 'low' }),
     ];
     const rulePack = new RulePack('test', 'test', rules);
 
@@ -162,7 +171,7 @@ describe('RulePack', () => {
     test('should convert to YAML data', () => {
       const rulePack = new RulePack('Test Pack', 'Desc', [sampleRule], '2.0.0');
       const yaml = rulePack.toYaml();
-      
+
       expect(yaml.name).toBe('Test Pack');
       expect(yaml.version).toBe('2.0.0');
       expect(yaml.rules).toHaveLength(1);
@@ -180,13 +189,13 @@ describe('RulePack', () => {
             id: 'r1',
             description: 'desc',
             match_keywords: ['test'],
-            category: 'pii'
-          }
-        ]
+            category: 'pii',
+          },
+        ],
       };
-      
+
       const rulePack = RulePack.fromYaml(yamlData);
-      
+
       expect(rulePack.name).toBe('YAML Pack');
       expect(rulePack.version).toBe('1.5.0');
       expect(rulePack.rules).toHaveLength(1);
